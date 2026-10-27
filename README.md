@@ -42,6 +42,9 @@ python -m aerofix.check_env      # CUDA, libraries, Ollama
 pytest                           # unit tests
 python -m aerofix.data.build     # Phase 1: clean, dedup, split -> data/processed/ (~1 min first run)
 python -m aerofix.eval.eda       # Phase 1: reports/eda.md + reports/figures/
+python -c "import nltk; [nltk.download(p) for p in ('wordnet','omw-1.4','averaged_perceptron_tagger_eng','stopwords')]"
+python -m aerofix.preprocess.build_norm   # Phase 2: fit normaliser, normalise corpus (~11 min, mostly lemmatisation)
+python -m aerofix.eval.normalisation      # Phase 2: reports/normalisation.md (~10 min)
 ```
 
 Two documents must be downloaded by hand from [drs.faa.gov](https://drs.faa.gov), because that site has no stable PDF links. Save them into `data/raw/docs/` as `TCDS_A28NM.pdf` (A320 family) and `TCDS_A16WE.pdf` (Boeing 737).

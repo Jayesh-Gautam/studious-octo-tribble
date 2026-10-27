@@ -45,3 +45,31 @@ FAA-H-8083-30B/31B/32B replace the older split volumes. Indexing both editions w
 **MAX variant mapping is evidence-based.** Bare codes `7378`/`7379` appear only from 2017/2018 (MAX entry into service), and where the engine field is filled it is LEAP-1B (MAX engine) rather than CFM56-7B (NG engine).
 
 **Why top-K chapters come from train only.** Choosing classes by looking at the test year would be a (mild) form of tuning on test.
+
+## Phase 2: Text normalisation
+
+**Tokeniser built for the domain.** Generic tokenisers split `R&R`, `P/N`, `A/C` and `737-700` into meaningless pieces. Ours keeps alphanumerics joined by `& / ' . -` together, keeps `[REF]` whole, and treats `W/` ("with") as one token.
+
+**Abbreviations: mined, then reviewed by a human.** Two mining rules on train:
+1. **Shape:** no vowels, or contains `&` or `/`.
+2. **Contraction:** the token's letters appear in order inside a much more frequent word with the same first letter (RPLCD ⊂ REPLACED).
+
+The automatic suggestions are often wrong (`MIA` is an airport, not MAINTENANCE), so only the hand-reviewed `abbrev.csv` is applied. Rows marked ambiguous (`LT` = left or light) are never expanded, because a wrong expansion is worse than none.
+
+**N-gram LM written from scratch, with Kneser-Ney.**
+- *Laplace* adds 1 to every count. With ~80k vocabulary words, almost all trigram contexts are rare, so the +1s swamp the real counts and the trigram ends up *worse* than the unigram (perplexity 2,834 vs 862).
+- *Kneser-Ney* subtracts a small discount D = 0.75 from seen counts and gives that mass to a lower-order model. The lower-order model is built on *continuation counts*: how many different contexts a word follows, not how often it occurs. Trigram KN reaches perplexity ~41.
+- Unit tests check that every model's probabilities sum to 1 for seen and unseen contexts. That is the correctness property of a smoothing method.
+
+**Spelling: noisy channel = edit model × language model.**
+- Candidates come from a SymSpell-style index of all strings 1–2 deletions away from a dictionary word. This is fast, and the delete trick finds every word within 2 edits.
+- Scoring: `log P_LM(word | context) - penalty × edit distance`.
+- The penalty was tuned on half of a set of synthetic typos and reported on the other half (no tuning on the reported numbers).
+- The best penalty is high (15), which means "fewest edits first, then let context break ties". Context breaks ties better than word frequency does.
+- A WordNet guard was added after the first run "corrected" valid rare words (LOADABLE → READABLE). Precision matters more than recall here, because a wrong correction changes the meaning.
+
+**Stemming vs lemmatisation.**
+- **Porter stemming** applies suffix rules: fast (8 s for the corpus) but gives non-words (VALVES → VALV).
+- **WordNet lemmatisation** needs a POS tag (REPLACED as a verb → REPLACE). It gives readable output but is about 70× slower (10 min).
+
+**Honest negative result.** On TF-IDF + logistic regression, none of the normalisation steps changes val macro-F1 by more than noise. A linear model with 100k training reports sees each common variant often enough to weight it on its own. We keep normalisation because it is expected to help retrieval of short queries (Phase 5) and the embedding-based models (Phase 4), and those phases measure it.

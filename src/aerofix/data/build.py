@@ -105,7 +105,9 @@ def transform(df: pd.DataFrame, cfg: dict) -> tuple[pd.DataFrame, dict]:
     date_year = df.difficulty_date.dt.year
     counts["date_year_differs_from_file_year"] = int((date_year.notna() & (date_year != df.file_year)).sum())
     counts["final_rows"] = len(df)
-    return df.reset_index(drop=True), counts
+    df = df.reset_index(drop=True)
+    df["row_id"] = df.index  # stable key to join later derived tables (e.g. sdr_norm.parquet)
+    return df, counts
 
 
 def write_schema_report(raw: pd.DataFrame, cfg: dict) -> None:

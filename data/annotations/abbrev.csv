@@ -1,0 +1,154 @@
+abbrev,expansion,ambiguous,note
+RPLCD,REPLACED,no,
+REPLCD,REPLACED,no,
+RPL,REPLACED,no,
+RPLD,REPLACED,no,
+RD,,yes,REPLACED? also road/round
+RMVD,REMOVED,no,
+RPR,REPAIRED,no,
+RPRD,REPAIRED,no,
+R&R,REMOVED AND REPLACED,no,
+R/R,REMOVED AND REPLACED,no,
+INSP,INSPECTION,no,
+CK,CHECK,no,
+CHK,CHECK,no,
+CKS,CHECKS,no,
+CHKS,CHECKS,no,
+CKD,,yes,CHECKED or CRACKED
+OPS,OPERATIONAL,no,"mostly OPS CHECK; occasionally flight OPS"
+SVC,SERVICE,no,
+PERF,PERFORMED,no,
+PFD,,yes,PERFORMED or primary flight display
+ACCOMP,ACCOMPLISHED,no,
+MAINT,MAINTENANCE,no,
+MX,MAINTENANCE,no,
+MTC,MAINTENANCE,no,
+GNDED,GROUNDED,no,
+GND,GROUND,no,
+GRD,,yes,GROUND or GUARD
+MKD,MARKED,no,
+MRKD,MARKED,no,
+FABED,FABRICATED,no,
+DELAM,DELAMINATION,no,
+CORR,CORROSION,no,
+LK,LEAK,no,
+TBD,,no,keep: to be determined
+FWD,FORWARD,no,
+R/H,RIGHT,no,
+RH,RIGHT,no,
+RHS,RIGHT,no,
+RT,RIGHT,no,"RT WING; rarely 'route'"
+L/H,LEFT,no,
+LH,LEFT,no,
+LHS,LEFT,no,
+LT,,yes,LEFT or LIGHT
+I/B,INBOARD,no,
+IB,INBOARD,no,
+INB,INBOARD,no,
+O/B,OUTBOARD,no,
+OUTBD,OUTBOARD,no,
+LWR,LOWER,no,
+UPR,UPPER,no,
+HORIZ,HORIZONTAL,no,
+HORZ,HORIZONTAL,no,
+VERT,VERTICAL,no,
+EXT,,yes,EXTERNAL or EXTEND or EXTENSION
+INT,,yes,INTERIOR or INTERNAL or INTERMITTENT
+CTR,CENTER,no,
+CTL,CONTROL,no,
+T/E,TRAILING EDGE,no,
+L/E,LEADING EDGE,no,
+E/E,ELECTRONIC EQUIPMENT,no,
+E&E,ELECTRONIC EQUIPMENT,no,
+STR,STRINGER,no,"location code, e.g. STR 14L"
+STRG,STRINGER,no,
+STGR,STRINGER,no,
+STG,STRINGER,no,
+FR,FRAME,no,"Airbus frame number, e.g. FR 16"
+FRM,FRAME,no,
+BS,,no,keep: body station (location code)
+FS,,no,keep: fuselage station (location code)
+BL,,no,keep: buttock line
+RBL,,no,keep: right buttock line
+LBL,,no,keep: left buttock line
+WBL,,no,keep: wing buttock line
+WL,,no,keep: water line
+A/C,AIRCRAFT,no,
+P/N,PART NUMBER,no,
+PN,PART NUMBER,no,
+S/N,SERIAL NUMBER,no,
+SN,SERIAL NUMBER,no,
+PNL,PANEL,no,
+HYD,HYDRAULIC,no,
+VLV,VALVE,no,
+BATT,BATTERY,no,
+EMER,EMERGENCY,no,
+EMERG,EMERGENCY,no,
+SYS,SYSTEM,no,
+FLT,FLIGHT,no,
+DWG,DRAWING,no,
+DWGS,DRAWINGS,no,
+DRW,DRAWING,no,
+DRWG,DRAWING,no,
+ASSY,ASSEMBLY,no,
+BLKHD,BULKHEAD,no,
+ELEV,ELEVATOR,no,
+OXY,OXYGEN,no,
+QTY,QUANTITY,no,
+APROX,APPROXIMATELY,no,
+APPROX,APPROXIMATELY,no,
+BTW,BETWEEN,no,
+BTWN,BETWEEN,no,
+W/,WITH,no,
+W/O,WITHOUT,no,
+PWR,POWER,no,
+LVL,LEVEL,no,
+NBR,NUMBER,no,
+SHT,SHEET,no,
+PG,PAGE,no,
+PGS,PAGES,no,
+PARAG,PARAGRAPH,no,
+CYC,CYCLES,no,
+HRS,HOURS,no,
+LDG,LANDING,no,
+NLG,NOSE LANDING GEAR,no,
+MLG,MAIN LANDING GEAR,no,
+L/G,LANDING GEAR,no,
+LG,,yes,LANDING GEAR or LIGHT or LONG
+STBY,STANDBY,no,
+OVHT,OVERHEAT,no,
+VIB,VIBRATION,no,
+ILLUM,ILLUMINATED,no,
+IND,INDICATION,no,
+REQ,REQUIRED,no,
+PREV,PREVIOUS,no,
+CUST,CUSTOMER,no,
+PROC,PROCEDURE,no,
+COMPT,COMPARTMENT,no,
+T/O,TAKEOFF,no,
+C/B,CIRCUIT BREAKER,no,
+CB,CIRCUIT BREAKER,no,
+F/A,FLIGHT ATTENDANT,no,
+F/O,FIRST OFFICER,no,
+QC,QUALITY CONTROL,no,
+Q/C,QUALITY CONTROL,no,
+T/S,TROUBLESHOOT,no,
+T/R,THRUST REVERSER,no,
+KTS,KNOTS,no,
+NML,NORMAL,no,
+SPT,SUPPORT,no,
+PLT,,yes,PLATE or PILOT
+C/W,,yes,COMPLIED WITH or CLOCKWISE
+NR,,yes,unclear in context (number? not required?)
+N/R,,yes,NOT REQUIRED or NO REPAIR
+BR,,yes,BRACKET or BRAKE
+MM,,yes,MILLIMETRE or MAINTENANCE MANUAL
+TR,,yes,TRACK or THRUST REVERSER
+MT,,yes,unclear
+FT,FEET,no,
+SRM,,no,keep: manual type (number already masked)
+AMM,,no,keep: manual type
+NDT,,no,keep: non-destructive testing
+SB,,no,keep: service bulletin
+FMC,,no,keep: flight management computer
+QRH,,no,keep: quick reference handbook

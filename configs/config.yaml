@@ -88,6 +88,22 @@ preprocess:
     "DURING HEAVY MAINTENANCE:": HEAVY_MAINTENANCE
   normaliser: lemma   # lemma | stem | none
 
+# Phase 2: text normalisation. Everything is fitted on TRAIN only.
+normalise:
+  abbrev_path: data/annotations/abbrev.csv
+  lm:
+    order: 3
+    discount: 0.75        # Kneser-Ney absolute discount (standard value)
+    unk_min_count: 2      # train words seen once -> <UNK>
+  spell:
+    dict_min_count: 5     # a word seen >= 5 times in train counts as correctly spelled
+    max_edit: 2
+    min_len: 4            # never correct tokens of 3 letters or fewer
+    edit_penalty: 15.0    # log-prob cost per edit; tuned on val typos (plateau from 15 up, see reports/normalisation.md)
+  remove_stopwords: false
+  keep_stopwords: [NO, NOT, NOR, OFF, ON, OUT, UP, DOWN, OVER, UNDER, ABOVE, BELOW, BEFORE, AFTER]
+  ablation_train_sample: 100000
+
 classify:
   top_k_ata2: 15
   top_n_condition: 15

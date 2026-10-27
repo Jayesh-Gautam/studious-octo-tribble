@@ -4,7 +4,7 @@
 |---|---|
 | 0. Setup | Done |
 | 1. Data pipeline + EDA | Done |
-| 2. Text normalisation | Not started |
+| 2. Text normalisation | Done (abbrev.csv awaiting your review) |
 | 3. Problem / action segmentation | Not started |
 | 4. Classification | Not started |
 | 5. Retrieval | Not started |
@@ -74,3 +74,33 @@ Outputs: `data/processed/sdr_a320_b737.parquet`, `reports/schema_mapping.md`, `r
 - **Abbreviation candidates** (BS, FWD, STR, RBL, R&R, P/N, A/C ...) are listed in `reports/eda.md` §8 for Phase 2. "SRM"/"MM" also remain as bare words with no number. They carry a weak hint (structure), which the Phase 3 problem/action split mostly removes.
 
 **Tests:** 42 passed.
+
+## Phase 2: Text normalisation (2026-10-28)
+
+Commands: `python -m aerofix.preprocess.build_norm`, then `python -m aerofix.eval.normalisation`.
+Outputs:
+- `models/normaliser.pkl`
+- `data/processed/sdr_norm.parquet` (`text_norm`, `text_stem` and `text_lemma`, joined to the main table on `row_id`)
+- `reports/normalisation.md`
+
+Everything is fitted on train and measured on val; test was not used.
+
+**Results (val)**
+| Component | Result |
+|---|---|
+| Abbreviations | 123 expanding entries rewrite 4.3% of val tokens; 62% of reports contain at least one |
+| LM perplexity | Laplace 1/2/3-gram: 862 / 409 / **2,834**; Kneser-Ney 1/2/3-gram: 864 / 77 / **41.2** |
+| Spelling, synthetic typos (held-out half) | Edit distance only 96.7% → noisy channel (edit + trigram LM, penalty 15) **99.2%** |
+| Spelling, real val text | Out-of-dictionary words 0.84% → 0.28% |
+| Ablation, TF-IDF + LR on 100k train sample | Val macro-F1 0.853–0.855 for every variant: **no measurable effect** |
+
+**Changes made after the first run**
+- The spell corrector "fixed" valid rare words (LOADABLE → READABLE, DECELERATED → ACCELERATED). Real English words (WordNet) are now protected.
+- The edit penalty is now tuned on half of the synthetic typos and reported on the other half. The original grid peaked at its edge (6.0); the wider grid levels off from 15.
+
+**Known limitations**
+- Some valid domain words that WordNet doesn't know still get "corrected": LOADABLE, UNRIVETED, RIBLETS, CEIL, SUBSTEP. These are listed in the report's spot-check table.
+- Real-word errors (FORM for FROM) are not detected.
+- Lemmatisation takes ~10 min for the corpus because of the POS tagger.
+
+**Your action:** review `data/annotations/abbrev.csv` (160 rows: 123 to expand, 15 marked ambiguous, 22 kept as-is). Change an `expansion` or set `ambiguous` to yes/no, then rerun the two commands above.
