@@ -17,6 +17,47 @@ download:
   sdr_url: https://external.apic4e.faa.gov/sdrs/retrieve/SDR-{year}.csv
   years: [1995, 2026]
 
+build:
+  years: [1995, 2025]   # 2026 is a partial year; left out for now
+  # Only these SDR columns are read (keeps memory low; the CSVs have 76).
+  usecols: [OperatorControlNumber, DifficultyDate, OperatorDesignator, JASCCode,
+            NatureOfConditionA, PrecautionaryProcedureA, StageOfOperationCode,
+            HowDiscoveredCode, AircraftMake, AircraftModel, AircraftTotalTime,
+            AircraftTotalCycles, EngineMake, EngineModel, PartMake, PartName,
+            PartNumber, PartCondition, PartLocation, ComponentName,
+            ComponentLocation, Discrepancy]
+  # Values that mean "not recorded"; counted as missing in fill-rate tables.
+  placeholders: ["", "UNK", "UNKNOWN", "N/A", "NA", "NONE", "-", "--", "*", "?"]
+
+# Raw 2025 facts from the project brief; build.py asserts these (exit check).
+sanity_2025:
+  total_rows: 67652
+  b737_rows: 22935
+  a320_rows: 12415
+  ata2_chapters: 38
+  jasc_codes: 347
+
+# Model code -> variant. Boeing codes are 737 + series digit + 2-char customer
+# code (+ "ER"), e.g. 7378H4 = 737-800. Codes WITHOUT a customer code first appear
+# in 2017 (7378) and 2018 (7379), matching MAX 8 / MAX 9 entry into service, and
+# carry LEAP-1B engines where the engine is filled in, so they map to MAX.
+variants:
+  boeing_exact:
+    "7377": 737 MAX 7
+    "7378": 737 MAX 8
+    "7379": 737 MAX 9
+    "73710": 737 MAX 10
+    "7378200": 737 MAX 8-200
+    "737": 737 (unspecified)
+    "737*": 737 (unspecified)
+    "7377*": 737-700
+    "737800*": 737-800
+  boeing_series: {"1": 737-100, "2": 737-200, "3": 737-300, "4": 737-400,
+                  "5": 737-500, "6": 737-600, "7": 737-700, "8": 737-800, "9": 737-900}
+  # Airbus: A3xx + 3-digit engine/weight code + optional N/NX (neo).
+  airbus_exact:
+    "A320*": A320 family (unspecified)
+
 # Time-based split: models never see the future. Test (2025) is touched only for
 # final reporting.
 split:
@@ -35,10 +76,16 @@ filters:
 preprocess:
   # Manual references (AMM 52-10-00, SRM 51-40-02 ...) leak the ATA label, so they
   # are replaced by mask_token in classifier/retriever inputs.
-  ref_regex: '\b(AMM|FIM|TSM|SRM|IPC|MEL|CMM|WDM|SWPM|NDT)\s*(?:TASK|REF|CH|CHAPTER)?\s*[:#]?\s*(\d{2}-\d{2}(?:-\d{2})?)'
+  # Manual types recognised before a chapter number. M/M and MM are normalised to AMM.
+  ref_types: [AMM, FIM, TSM, SRM, IPC, IPD, MEL, CMM, WDM, SWPM, NDT, NDTM, SSM, MM, M/M]
   mask_token: "[REF]"
+  # Leading phrases that describe the situation, not the fault. Stripped from the
+  # text and kept in a `context` column.
   boilerplate_prefixes:
-    - "AIRCRAFT WAS NOT GROUNDED:"
+    "AIRCRAFT IN BASE MAINTENANCE:": BASE_MAINTENANCE
+    "AIRCRAFT WAS NOT GROUNDED:": NOT_GROUNDED
+    "AIRCRAFT WAS GROUNDED:": GROUNDED
+    "DURING HEAVY MAINTENANCE:": HEAVY_MAINTENANCE
   normaliser: lemma   # lemma | stem | none
 
 classify:

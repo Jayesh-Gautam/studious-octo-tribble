@@ -1,0 +1,293 @@
+{
+  "per_year": [
+    {
+      "year": 1995,
+      "total_rows": 37222,
+      "b737_rows": 3472,
+      "a320_rows": 299,
+      "ata2_chapters": 34,
+      "jasc_codes": 208
+    },
+    {
+      "year": 1996,
+      "total_rows": 43183,
+      "b737_rows": 4597,
+      "a320_rows": 443,
+      "ata2_chapters": 35,
+      "jasc_codes": 227
+    },
+    {
+      "year": 1997,
+      "total_rows": 45993,
+      "b737_rows": 4847,
+      "a320_rows": 371,
+      "ata2_chapters": 36,
+      "jasc_codes": 223
+    },
+    {
+      "year": 1998,
+      "total_rows": 47030,
+      "b737_rows": 6158,
+      "a320_rows": 292,
+      "ata2_chapters": 34,
+      "jasc_codes": 211
+    },
+    {
+      "year": 1999,
+      "total_rows": 42852,
+      "b737_rows": 5992,
+      "a320_rows": 345,
+      "ata2_chapters": 34,
+      "jasc_codes": 232
+    },
+    {
+      "year": 2000,
+      "total_rows": 48739,
+      "b737_rows": 8455,
+      "a320_rows": 428,
+      "ata2_chapters": 33,
+      "jasc_codes": 277
+    },
+    {
+      "year": 2001,
+      "total_rows": 46195,
+      "b737_rows": 9088,
+      "a320_rows": 429,
+      "ata2_chapters": 37,
+      "jasc_codes": 271
+    },
+    {
+      "year": 2002,
+      "total_rows": 40464,
+      "b737_rows": 7230,
+      "a320_rows": 661,
+      "ata2_chapters": 37,
+      "jasc_codes": 283
+    },
+    {
+      "year": 2003,
+      "total_rows": 39750,
+      "b737_rows": 6710,
+      "a320_rows": 1091,
+      "ata2_chapters": 35,
+      "jasc_codes": 283
+    },
+    {
+      "year": 2004,
+      "total_rows": 40503,
+      "b737_rows": 8695,
+      "a320_rows": 1406,
+      "ata2_chapters": 37,
+      "jasc_codes": 272
+    },
+    {
+      "year": 2005,
+      "total_rows": 41417,
+      "b737_rows": 9174,
+      "a320_rows": 1347,
+      "ata2_chapters": 36,
+      "jasc_codes": 271
+    },
+    {
+      "year": 2006,
+      "total_rows": 49113,
+      "b737_rows": 10338,
+      "a320_rows": 2145,
+      "ata2_chapters": 36,
+      "jasc_codes": 267
+    },
+    {
+      "year": 2007,
+      "total_rows": 52166,
+      "b737_rows": 11871,
+      "a320_rows": 2187,
+      "ata2_chapters": 35,
+      "jasc_codes": 278
+    },
+    {
+      "year": 2008,
+      "total_rows": 52153,
+      "b737_rows": 13136,
+      "a320_rows": 2566,
+      "ata2_chapters": 35,
+      "jasc_codes": 279
+    },
+    {
+      "year": 2009,
+      "total_rows": 54958,
+      "b737_rows": 14557,
+      "a320_rows": 2586,
+      "ata2_chapters": 37,
+      "jasc_codes": 281
+    },
+    {
+      "year": 2010,
+      "total_rows": 61806,
+      "b737_rows": 12297,
+      "a320_rows": 4290,
+      "ata2_chapters": 37,
+      "jasc_codes": 295
+    },
+    {
+      "year": 2011,
+      "total_rows": 76503,
+      "b737_rows": 14052,
+      "a320_rows": 5746,
+      "ata2_chapters": 36,
+      "jasc_codes": 312
+    },
+    {
+      "year": 2012,
+      "total_rows": 73736,
+      "b737_rows": 16294,
+      "a320_rows": 7071,
+      "ata2_chapters": 37,
+      "jasc_codes": 322
+    },
+    {
+      "year": 2013,
+      "total_rows": 75929,
+      "b737_rows": 17360,
+      "a320_rows": 9119,
+      "ata2_chapters": 40,
+      "jasc_codes": 346
+    },
+    {
+      "year": 2014,
+      "total_rows": 64709,
+      "b737_rows": 16041,
+      "a320_rows": 5562,
+      "ata2_chapters": 37,
+      "jasc_codes": 321
+    },
+    {
+      "year": 2015,
+      "total_rows": 61633,
+      "b737_rows": 16581,
+      "a320_rows": 5233,
+      "ata2_chapters": 36,
+      "jasc_codes": 302
+    },
+    {
+      "year": 2016,
+      "total_rows": 60341,
+      "b737_rows": 16768,
+      "a320_rows": 5467,
+      "ata2_chapters": 36,
+      "jasc_codes": 313
+    },
+    {
+      "year": 2017,
+      "total_rows": 60778,
+      "b737_rows": 16696,
+      "a320_rows": 8733,
+      "ata2_chapters": 37,
+      "jasc_codes": 328
+    },
+    {
+      "year": 2018,
+      "total_rows": 59959,
+      "b737_rows": 19355,
+      "a320_rows": 8821,
+      "ata2_chapters": 37,
+      "jasc_codes": 318
+    },
+    {
+      "year": 2019,
+      "total_rows": 66466,
+      "b737_rows": 22425,
+      "a320_rows": 8986,
+      "ata2_chapters": 38,
+      "jasc_codes": 350
+    },
+    {
+      "year": 2020,
+      "total_rows": 52654,
+      "b737_rows": 15894,
+      "a320_rows": 6675,
+      "ata2_chapters": 37,
+      "jasc_codes": 313
+    },
+    {
+      "year": 2021,
+      "total_rows": 64633,
+      "b737_rows": 19690,
+      "a320_rows": 9506,
+      "ata2_chapters": 37,
+      "jasc_codes": 361
+    },
+    {
+      "year": 2022,
+      "total_rows": 62612,
+      "b737_rows": 22608,
+      "a320_rows": 8814,
+      "ata2_chapters": 38,
+      "jasc_codes": 366
+    },
+    {
+      "year": 2023,
+      "total_rows": 62691,
+      "b737_rows": 24790,
+      "a320_rows": 10916,
+      "ata2_chapters": 38,
+      "jasc_codes": 338
+    },
+    {
+      "year": 2024,
+      "total_rows": 66080,
+      "b737_rows": 23097,
+      "a320_rows": 12197,
+      "ata2_chapters": 39,
+      "jasc_codes": 335
+    },
+    {
+      "year": 2025,
+      "total_rows": 67652,
+      "b737_rows": 22935,
+      "a320_rows": 12415,
+      "ata2_chapters": 38,
+      "jasc_codes": 347
+    }
+  ],
+  "sanity_2025": {
+    "total_rows": {
+      "expected": 67652,
+      "got": 67652,
+      "ok": true
+    },
+    "b737_rows": {
+      "expected": 22935,
+      "got": 22935,
+      "ok": true
+    },
+    "a320_rows": {
+      "expected": 12415,
+      "got": 12415,
+      "ok": true
+    },
+    "ata2_chapters": {
+      "expected": 38,
+      "got": 38,
+      "ok": true
+    },
+    "jasc_codes": {
+      "expected": 347,
+      "got": 347,
+      "ok": true
+    }
+  },
+  "counts": {
+    "filtered_rows": 567350,
+    "dropped_bad_jasc": 0,
+    "dropped_short_text": 31,
+    "dropped_duplicates": 27311,
+    "dropped_cross_year_duplicates": 11924,
+    "date_year_differs_from_file_year": 0,
+    "final_rows": 540008,
+    "rows_per_split": {
+      "train": 472547,
+      "val": 34178,
+      "test": 33283
+    }
+  }
+}

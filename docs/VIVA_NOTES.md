@@ -25,3 +25,23 @@ FAISS is a single library doing exact or approximate vector search. Our corpus (
 
 **FAA documents: current "B" handbook editions only**
 FAA-H-8083-30B/31B/32B replace the older split volumes. Indexing both editions would put near-duplicate passages in the RAG index and crowd out other results.
+
+## Phase 1: Data pipeline
+
+**Read only the needed columns, as strings, and filter at once.** Each CSV has 76 columns and ~60k rows. Reading 22 columns with `dtype=str` avoids pandas guessing types (part numbers like `0012` would lose zeros) and keeps memory low. Per-year Parquet caches make re-runs take seconds.
+
+**UTF-8, checked rather than assumed.** All 32 files decode as strict UTF-8, so they are read that way. Latin-1 would silently garble the ~15k non-ASCII characters in later years.
+
+**Deduplicate before splitting, keep the earliest copy.** The same operator often files the same text again in a later year. If the 2023 copy is in train and the 2025 copy in test, the model is tested on a report it has already seen. 11,924 such cross-year copies were removed. The dedup key ignores punctuation and spacing ("R/H" = "R H").
+
+**Split on file year, not a random split.** Every `DifficultyDate` falls inside its file's year (0 mismatches), so file year is a clean time stamp.
+
+**Why mask references (label leakage).** "PER AMM 52-10-00" literally contains the answer (ATA 52). 64% of 2025 reports with a reference cite the label's chapter. A model trained on raw text would learn to read reference numbers instead of understanding the fault. We keep the references in a `refs` column (used by the Phase 6 recommender) and train on `text_masked`. Phase 4 measures F1 with and without masking to show the effect.
+
+**Why the regex grew.** The brief's regex missed real formats (`M/M 33-51-06`, chained `SRM 51-10-02; 51-40-02`, `SRM B737-700 51-20-01`). Each new format has a unit test (`tests/test_refs.py`), so a regex change can't silently break an older case. A final safety net masks any leftover `NN-NN-NN` number without adding it to `refs`, because a few could be dates.
+
+**Boilerplate kept as a feature.** "AIRCRAFT WAS GROUNDED:" says something about severity, not about which system failed. It is stripped from the text (so it doesn't dominate similarity) and kept in `context`.
+
+**MAX variant mapping is evidence-based.** Bare codes `7378`/`7379` appear only from 2017/2018 (MAX entry into service), and where the engine field is filled it is LEAP-1B (MAX engine) rather than CFM56-7B (NG engine).
+
+**Why top-K chapters come from train only.** Choosing classes by looking at the test year would be a (mild) form of tuning on test.

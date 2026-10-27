@@ -26,6 +26,16 @@ def set_seed(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
 
 
+def md_table(df, index: bool = True) -> str:
+    """DataFrame -> GitHub markdown table (avoids pulling in `tabulate` for pandas.to_markdown)."""
+    if index:
+        df = df.reset_index()
+    cols = [str(c) for c in df.columns]
+    lines = ["| " + " | ".join(cols) + " |", "|" + "---|" * len(cols)]
+    lines += ["| " + " | ".join(str(v) for v in row) + " |" for row in df.itertuples(index=False)]
+    return "\n".join(lines)
+
+
 def get_logger(name: str) -> logging.Logger:
     """Logger that writes to the console and to logs/aerofix.log, one shared format."""
     logger = logging.getLogger(name)
