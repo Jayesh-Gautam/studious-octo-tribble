@@ -103,4 +103,4 @@ Everything is fitted on train and measured on val; test was not used.
 - Real-word errors (FORM for FROM) are not detected.
 - Lemmatisation takes ~10 min for the corpus because of the POS tagger.
 
-**Your action:** review `data/annotations/abbrev.csv` (160 rows: 123 to expand, 15 marked ambiguous, 22 kept as-is). Change an `expansion` or set `ambiguous` to yes/no, then rerun the two commands above.
+**Your action:** review `data/annotations/abbrev.csv` (153 rows: 123 to expand, 16 marked ambiguous, 14 kept as-is). Change an `expansion` or set `ambiguous` to yes/no, then rerun the two commands above.
