@@ -1,0 +1,40 @@
+# Install PyTorch FIRST, from the CUDA index (see README):
+#   pip install torch --index-url https://download.pytorch.org/whl/cu124
+# It is not listed here because pip would pull the CPU-only wheel from PyPI.
+# Exact versions used are frozen in requirements-lock.txt.
+
+# Data
+pandas
+pyarrow
+numpy
+pyyaml
+requests
+tqdm
+
+# Classical NLP / ML
+scikit-learn
+nltk
+sklearn-crfsuite
+gensim
+rank-bm25
+lightgbm
+
+# Deep learning
+transformers
+datasets
+sentence-transformers
+
+# Retrieval / RAG
+faiss-cpu
+pymupdf
+ollama
+
+# App
+streamlit
+fastapi
+uvicorn
+
+# Plots / tests
+matplotlib
+seaborn
+pytest

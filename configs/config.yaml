@@ -1,0 +1,59 @@
+# AeroFix configuration. Every script reads this file; nothing else holds paths or
+# hyperparameters. Paths are relative to the project root.
+
+seed: 42
+
+paths:
+  raw_sdr: data/raw/sdr
+  raw_docs: data/raw/docs
+  interim: data/interim
+  processed: data/processed
+  annotations: data/annotations
+  models: models
+  reports: reports
+  logs: logs
+
+download:
+  sdr_url: https://external.apic4e.faa.gov/sdrs/retrieve/SDR-{year}.csv
+  years: [1995, 2026]
+
+# Time-based split: models never see the future. Test (2025) is touched only for
+# final reporting.
+split:
+  train_max_year: 2023
+  val_year: 2024
+  test_year: 2025
+
+filters:
+  A320:
+    make: AIRBUS
+    model_regex: "^A3(19|20|21)"
+  B737:
+    make: BOEING
+    model_regex: "^737"
+
+preprocess:
+  # Manual references (AMM 52-10-00, SRM 51-40-02 ...) leak the ATA label, so they
+  # are replaced by mask_token in classifier/retriever inputs.
+  ref_regex: '\b(AMM|FIM|TSM|SRM|IPC|MEL|CMM|WDM|SWPM|NDT)\s*(?:TASK|REF|CH|CHAPTER)?\s*[:#]?\s*(\d{2}-\d{2}(?:-\d{2})?)'
+  mask_token: "[REF]"
+  boilerplate_prefixes:
+    - "AIRCRAFT WAS NOT GROUNDED:"
+  normaliser: lemma   # lemma | stem | none
+
+classify:
+  top_k_ata2: 15
+  top_n_condition: 15
+  max_seq_len: 128
+  batch_size: 32
+  grad_accum_steps: 1
+  fp16: true
+  lr: 3.0e-5
+  epochs: 5
+  early_stopping_patience: 2
+
+llm:
+  host: http://localhost:11434
+  model: qwen2.5:7b-instruct
+  fallback_model: llama3.2:3b
+  temperature: 0.1

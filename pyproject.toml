@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aerofix"
+version = "0.1.0"
+description = "Maintenance fault advisor for Airbus A320-family and Boeing 737 fleets (NLP course project)"
+requires-python = ">=3.11"
+
+# src layout: the package lives in src/aerofix, so tests and scripts import the
+# installed package (pip install -e .) instead of whatever is in the current folder.
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
