@@ -138,3 +138,24 @@ The automatic suggestions are often wrong (`MIA` is an airport, not MAINTENANCE)
 **Error analysis.**
 - Most errors are genuine ambiguity: fume events (APU vs air conditioning), door-slide parts (52 vs 25), structure near doors (53 vs 52).
 - A few come from segmentation: action text left inside the problem ("FOUND AND CORRECTED").
+
+## Phase 5: Retrieval
+
+**Proxy relevance and metric choice.** There are no human relevance labels for 500k reports. "Same JASC code + same part condition" is a cheap stand-in for "the same kind of fault". Because each query has many such matches, classical recall (share of *all* relevant found) is meaningless, so we use Hit@k, P@5, MRR@10 and graded NDCG@5 (same JASC only = partial credit).
+
+**BM25 on sparse matrices.** The per-(term, document) BM25 weights are pre-computed once. A query is then the sum of its terms' columns, touching only their posting lists: ~10 ms over 400k reports, against ~0.5 s for the rank-bm25 loop.
+- k1 controls term-frequency saturation; b controls length normalisation.
+- A unit test checks the ranking against rank-bm25.
+
+**Bi-encoder vs cross-encoder.**
+- A bi-encoder embeds the query and each report *separately*, so all report vectors are computed once and search is a fast dot product (FAISS).
+- A cross-encoder reads the query *and* a candidate together, so attention compares them word by word. It's more accurate but must run once per candidate, which is why it only reranks the top 50.
+
+**Multiple Negatives Ranking loss.** For a batch of (anchor, positive, hard negative) triples, every other positive in the batch acts as a free negative.
+- The loss is cross-entropy over the scaled cosine-similarity matrix.
+- Hard negatives (same chapter, different JASC code) teach the model fine distinctions that random negatives never would.
+- Batches never contain two anchors from the same group, so a true match is never treated as a negative.
+
+**Reciprocal rank fusion.** BM25 scores are unbounded and cosine is between -1 and 1, so adding scores would be meaningless. RRF uses ranks only: score = Σ 1/(60 + rank).
+
+**Honest caveat: optimising the proxy.** The fine-tuned model was trained with the same definition the proxy metric uses, so proxy metrics favour it. The LLM judge (a different, reader-like notion of relevance) preferred BM25 on 50 queries, and the two agree on only 63% of pairs. Choosing the hybrid for the app, which mixes lexical and semantic evidence, hedges against this. A small human-judged set is the proper fix.

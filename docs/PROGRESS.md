@@ -7,7 +7,7 @@
 | 2. Text normalisation | Done (abbrev.csv awaiting your review) |
 | 3. Problem / action segmentation | Done (silver LLM labels; human check of test optional) |
 | 4. Classification | Done |
-| 5. Retrieval | Not started |
+| 5. Retrieval | Done |
 | 6. Recommenders | Not started |
 | 7. RAG + LLM summary | Not started |
 | 8. App | Not started |
@@ -171,3 +171,33 @@ Outputs: `reports/classification.md`, `reports/figures/confusion_*.png` and `mod
 - **Main confusions:** 49 APU ↔ 21 air conditioning (fume events), 72 engine → OTHER, 52 doors ↔ 25 equipment/slides.
 
 **Notes:** the ata4 head of TF-IDF uses SGD logistic regression, because L-BFGS needed 10 GB for 226 × 242k weights. **Tests:** 72 passed.
+
+## Phase 5: Retrieval of similar past cases (2026-10-28)
+
+Command: `python -m aerofix.retrieve.evaluate` (~25 min: encode corpus, fine-tune bi-encoder + cross-encoder, val + test stages, LLM check).
+Outputs: `reports/retrieval.md` and `models/retrieve/` (`biencoder/`, `crossencoder/`, `vectors_ft.npy`, `best.json`).
+
+**Setup**
+- Index text and queries: `problem_masked`, with search restricted to the same aircraft family.
+- Val stage: 1,000 queries from 2024 against the train index; used to choose the BM25 variant and the app's method.
+- Test stage: 2,000 queries from 2025 against train + val.
+- Proxy relevance: same JASC code + same part condition.
+
+**Test results (NDCG@5 / P@5 / ms per query)**
+| Method | NDCG@5 | P@5 | ms/query |
+|---|---|---|---|
+| BM25 raw → + stem (best BM25 on test) | 0.587 → 0.595 | 0.359 → 0.370 | ~10 |
+| Average Word2Vec | 0.607 | 0.379 | 0.5 |
+| MiniLM zero-shot | 0.616 | 0.403 | 0.6 |
+| **MiniLM fine-tuned** (MNRL with hard negatives) | **0.634** | **0.430** | 0.6 |
+| Hybrid RRF (BM25 + lemma + fine-tuned) | 0.625 | 0.417 | 10 |
+| Hybrid + cross-encoder rerank (best on val: 0.616 vs 0.606) | 0.626 | 0.427 | 26 |
+
+**Findings**
+- **Normalisation helps BM25** (+0.5–1 NDCG point on val and test): the first place the Phase 2 normalisation measurably pays off, as expected for keyword matching.
+- **Fine-tuning the bi-encoder:** +1.8 NDCG points over zero-shot on test.
+- **Reranking and hybrid** helped on val but not on test. Differences of ~1 point are within noise (SE ≈ 0.01 at 2,000 queries).
+- **The LLM check (50 test queries, top 5)** rates BM25 highest (P@5 0.56 vs 0.50 fine-tuned, 0.53 hybrid + rerank). LLM and proxy agree on only 63% of pairs. The fine-tuned model is trained on the proxy definition, so proxy metrics favour it, while a reader-like judge prefers lexical matches. 50 queries is not conclusive, but proxy-only evaluation clearly flatters the trained model. Human judgement of a sample is the right next step.
+- **App choice:** hybrid + cross-encoder rerank (protocol: best on val). It combines lexical and semantic matches, at 26 ms per query.
+
+**Tests:** 78 passed.
