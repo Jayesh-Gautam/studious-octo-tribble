@@ -35,7 +35,7 @@
 **Deviations from the brief**
 - Python 3.12 instead of 3.11 (approved).
 - Current single-volume "B" AMT handbooks instead of the older split volumes.
-- `accelerate` is *not* installed yet. HF `Trainer` needs it, so approval will be requested before Phase 3.
+- `accelerate` is not installed: Phase 3 uses our own PyTorch training loop instead of HF `Trainer` (your choice), so it is not needed.
 
 ## Phase 1: Data pipeline + EDA (2026-10-28)
 
