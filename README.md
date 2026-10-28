@@ -50,6 +50,16 @@ python -m aerofix.segment.llm_label       # Phase 3: LLM (Ollama) silver labels 
 streamlit run src/aerofix/segment/annotate_app.py   # Phase 3: annotate (see docs/ANNOTATION_GUIDE.md)
 python -m aerofix.segment.evaluate        # Phase 3: rules vs CRF vs DistilBERT -> reports/segmentation.md
 python -m aerofix.segment.apply           # Phase 3: segment the corpus with the best model (~15 min)
+python -m aerofix.classify.prepare        # Phase 4: normalise problem texts (~5 min)
+python -m aerofix.classify.tfidf          # Phase 4: TF-IDF + LR models and ablations (~1 h, CPU)
+python -m aerofix.classify.bilstm         # Phase 4: Word2Vec + BiLSTM (~7 min, GPU)
+python -m aerofix.classify.transformer --model distilbert   # Phase 4 (~35 min, GPU)
+python -m aerofix.classify.transformer --model roberta      # Phase 4 (~50 min, GPU)
+python -m aerofix.classify.transformer --model distilbert --text-col text --epochs 1 --name distilbert_full_unmasked
+python -m aerofix.classify.transformer --model distilbert --text-col text_masked --epochs 1 --name distilbert_full_masked
+python -m aerofix.classify.transformer --model distilbert --train-family A320 --epochs 2 --name distilbert_A320
+python -m aerofix.classify.transformer --model distilbert --train-family B737 --epochs 2 --name distilbert_B737
+python -m aerofix.classify.report        # Phase 4: reports/classification.md
 ```
 
 Two documents must be downloaded by hand from [drs.faa.gov](https://drs.faa.gov), because that site has no stable PDF links. Save them into `data/raw/docs/` as `TCDS_A28NM.pdf` (A320 family) and `TCDS_A16WE.pdf` (Boeing 737).

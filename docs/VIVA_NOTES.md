@@ -112,3 +112,29 @@ The automatic suggestions are often wrong (`MIA` is an airport, not MAINTENANCE)
 - The CRF's transition weights and Viterbi decoding produce whole, clean spans.
 - The standard fix is a CRF layer on top of BERT (BERT-CRF), listed as future work.
 - With only 280 training reports, a 66M-parameter model can't beat good features plus structured decoding. The learning curve shows BERT is still improving at 280.
+
+## Phase 4: Classification
+
+**Why `problem_masked` as input.** At prediction time the technician has only the fault description. Training on the full report (which includes the fix) or unmasked references would inflate scores without helping real use. The leakage tables quantify both effects.
+
+**Macro-F1 as the headline.** ATA 53 is 46% of train. Accuracy rewards predicting 53; macro-F1 averages per-class F1, so ATA 34 (139 test reports) counts as much as ATA 53 (11,507).
+
+**Label spaces from train only.** Top-K chapters, JASC codes ≥ 100 and top-20 conditions are counted on train. UNKNOWN/NONE are placeholders, not conditions, so they go to OTHER.
+
+**Class weights.**
+- LR uses fully "balanced" weights (1/frequency).
+- The neural models use (1/frequency)^0.5. Full inverse weights with 226 ATA4 classes make rare-class gradients huge and training unstable; the square root is a common compromise.
+
+**Multi-task learning.** One encoder, three heads, summed losses. The chapter, the JASC code and the condition share evidence ("CRACKED FRAME" informs both 53 and CRACKED), and one model is cheaper to serve than three.
+
+**Character n-grams.** These make TF-IDF robust to typos (CORRISION shares most 3–5-grams with CORROSION). A control experiment showed they must be taken from tokenised text: punctuation glued to words ("LEAKING.") split the evidence.
+
+**Word2Vec learned the typos.** The nearest neighbours of CORROSION are CORRSION, COROSION, CORROSSION… Skip-gram puts words used in the same contexts close together, which is why the BiLSTM doesn't need spelling correction to cope with typos.
+
+**Length-grouped batches.** Median problem text is 21 sub-words, the maximum 128. Sorting by length inside random mega-batches cuts padding, so an epoch takes 8 min instead of ~25, and batch order stays random.
+
+**Why not RoBERTa?** It matched DistilBERT (val 0.844 vs 0.848) at twice the cost. The texts are short and full of jargon and abbreviations unlike RoBERTa's pre-training data, so extra capacity has little to work with. DistilBERT is also faster at inference, which matters for the < 5 s app target.
+
+**Error analysis.**
+- Most errors are genuine ambiguity: fume events (APU vs air conditioning), door-slide parts (52 vs 25), structure near doors (53 vs 52).
+- A few come from segmentation: action text left inside the problem ("FOUND AND CORRECTED").

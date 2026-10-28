@@ -6,7 +6,7 @@
 | 1. Data pipeline + EDA | Done |
 | 2. Text normalisation | Done (abbrev.csv awaiting your review) |
 | 3. Problem / action segmentation | Done (silver LLM labels; human check of test optional) |
-| 4. Classification | Not started |
+| 4. Classification | Done |
 | 5. Retrieval | Not started |
 | 6. Recommenders | Not started |
 | 7. RAG + LLM summary | Not started |
@@ -135,3 +135,39 @@ Outputs: `reports/segmentation.md`, `models/segment/` and `data/processed/sdr_se
 **Optional, recommended for the viva:** hand-label the 60 test reports in the annotation tool (≈30 min). Human labels automatically replace the LLM ones; then rerun `segment.evaluate`.
 
 **Tests:** 67 passed.
+
+## Phase 4: Classification (2026-10-28)
+
+Commands:
+1. `python -m aerofix.classify.prepare`
+2. `python -m aerofix.classify.tfidf`
+3. `python -m aerofix.classify.bilstm`
+4. `python -m aerofix.classify.transformer --model distilbert` (and `--model roberta`, plus the ablation runs in the README)
+5. `python -m aerofix.classify.report`
+
+Outputs: `reports/classification.md`, `reports/figures/confusion_*.png` and `models/classify/`.
+
+**Input:** `problem_masked`. **Targets:** ata2 (top 15 + OTHER), ata4 (225 JASC codes + OTHER), condition (top 20 raw codes + OTHER). Tuned on val; test scored once with frozen models.
+
+**ATA2 results (macro-F1 / accuracy)**
+| Model | Val 2024 | Test 2025 |
+|---|---|---|
+| Majority class | 0.036 / 0.41 | 0.032 / 0.35 |
+| TF-IDF + LR | 0.822 / 0.870 | 0.820 / 0.892 |
+| BiLSTM + Word2Vec | 0.840 / 0.893 | 0.847 / 0.913 |
+| **DistilBERT, multi-task** (selected on val) | **0.848 / 0.898** | 0.859 / 0.922 |
+| RoBERTa-base, multi-task | 0.844 / 0.897 | 0.860 / 0.922 |
+
+- Top-3 accuracy is ≈0.99 for all neural models.
+- ata4 macro-F1: ~0.39 (225 classes).
+- Condition macro-F1: ~0.60. The condition vocabulary drifts: OTHER is 15% of train but 24% of test.
+
+**Findings**
+- **Leakage:** full report unmasked → masked costs 0.9 points (DistilBERT) and 0.9 points (TF-IDF, tokenised char n-grams). The realistic problem-only input scores lower again, because the action text carries information the technician doesn't have yet.
+- **RoBERTa ≈ DistilBERT:** RoBERTa has twice the parameters and twice the training time for no gain on val.
+- **Cross-family:** training on the other family costs 5–7 macro-F1 points (DistilBERT, equal train size).
+- **Normalisation:** no effect beyond tokenisation (control row). An earlier "+2 points" turned out to come from dropping punctuation before the character n-grams. That is now part of the TF-IDF pipeline.
+- **Recent years only (2015–2023):** +0.7 points for TF-IDF on an equal-size sample.
+- **Main confusions:** 49 APU ↔ 21 air conditioning (fume events), 72 engine → OTHER, 52 doors ↔ 25 equipment/slides.
+
+**Notes:** the ata4 head of TF-IDF uses SGD logistic regression, because L-BFGS needed 10 GB for 226 × 242k weights. **Tests:** 72 passed.

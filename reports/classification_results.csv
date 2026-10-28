@@ -1,0 +1,31 @@
+model,split,target,accuracy,macro_F1,weighted_F1,top3_acc
+Majority class,val,ata2,0.4062,0.0361,0.2346,0.4481
+Majority class,val,ata4,0.1906,0.0014,0.0611,0.2107
+Majority class,val,condition,0.2115,0.0166,0.0738,0.4277
+Majority class,test,ata2,0.3457,0.0321,0.1776,0.3921
+Majority class,test,ata4,0.1497,0.0012,0.039,0.1753
+Majority class,test,condition,0.1886,0.0151,0.0598,0.3822
+TF-IDF + LR,val,ata2,0.8701,0.822,0.8739,0.9796
+TF-IDF + LR,val,ata4,0.6724,0.3772,0.6976,0.8629
+TF-IDF + LR,val,condition,0.7017,0.5853,0.7201,0.9171
+TF-IDF + LR,test,ata2,0.8916,0.8196,0.894,0.9793
+TF-IDF + LR,test,ata4,0.6882,0.3712,0.7116,0.8728
+TF-IDF + LR,test,condition,0.6833,0.5827,0.7,0.9045
+BiLSTM + Word2Vec,val,ata2,0.893,0.8402,0.8944,0.9879
+BiLSTM + Word2Vec,val,ata4,0.6779,0.35,0.6854,0.8845
+BiLSTM + Word2Vec,val,condition,0.6995,0.5859,0.7161,0.9226
+BiLSTM + Word2Vec,test,ata2,0.9133,0.8467,0.9139,0.9867
+BiLSTM + Word2Vec,test,ata4,0.6972,0.3659,0.7012,0.8839
+BiLSTM + Word2Vec,test,condition,0.6884,0.5827,0.7015,0.9155
+DistilBERT (multi-task),val,ata2,0.8978,0.8475,0.8989,0.9888
+DistilBERT (multi-task),val,ata4,0.6748,0.3923,0.6948,0.8915
+DistilBERT (multi-task),val,condition,0.7203,0.6047,0.735,0.939
+DistilBERT (multi-task),test,ata2,0.9215,0.8588,0.9218,0.9892
+DistilBERT (multi-task),test,ata4,0.7143,0.3929,0.7263,0.8992
+DistilBERT (multi-task),test,condition,0.7271,0.6104,0.7404,0.9309
+RoBERTa-base (multi-task),val,ata2,0.8966,0.8444,0.8979,0.9893
+RoBERTa-base (multi-task),val,ata4,0.6804,0.3897,0.6963,0.8941
+RoBERTa-base (multi-task),val,condition,0.7093,0.5987,0.7265,0.9361
+RoBERTa-base (multi-task),test,ata2,0.9216,0.8597,0.922,0.9888
+RoBERTa-base (multi-task),test,ata4,0.7146,0.4034,0.7247,0.8974
+RoBERTa-base (multi-task),test,condition,0.7101,0.6039,0.7262,0.9288

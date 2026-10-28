@@ -105,15 +105,40 @@ normalise:
   ablation_train_sample: 100000
 
 classify:
+  # Label spaces are built from TRAIN counts only; everything else -> OTHER.
   top_k_ata2: 15
-  top_n_condition: 15
-  max_seq_len: 128
-  batch_size: 32
-  grad_accum_steps: 1
-  fp16: true
-  lr: 3.0e-5
-  epochs: 5
-  early_stopping_patience: 2
+  ata4_min_count: 100               # JASC codes with >= 100 train reports (225 codes, 98.5% of train)
+  top_n_condition: 20
+  condition_exclude: ["", UNKNOWN, NONE, UNK]   # placeholders are not conditions -> OTHER
+  text_col: problem_masked          # what the technician knows before fixing (Phase 3)
+  tfidf:
+    word_max_features: 200000
+    char_max_features: 300000
+    min_df: 5
+    C_grid: [0.5, 2.0, 8.0]          # tuned on val ata2 macro-F1 (first run: 0.811 / 0.820 / 0.809 -> interior optimum)
+    ablation_train_sample: 150000   # ablations use a fixed train sample to keep runtime sane
+  bilstm:
+    w2v_dim: 300
+    w2v_window: 5
+    w2v_min_count: 3
+    w2v_epochs: 5
+    hidden: 256
+    layers: 2
+    dropout: 0.3
+    batch_size: 256
+    lr: 1.0e-3
+    epochs: 10
+    patience: 2
+  transformer:
+    max_seq_len: 128
+    batch_size: 64
+    lr: 3.0e-5
+    warmup_frac: 0.06
+    patience: 1
+    models:
+      distilbert: {name: distilbert-base-uncased, epochs: 4}
+      roberta: {name: roberta-base, epochs: 3}
+  class_weight_power: 0.5           # neural loss weight = (1/freq)^0.5, normalised to mean 1
 
 llm:
   host: http://localhost:11434
