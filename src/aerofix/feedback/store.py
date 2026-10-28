@@ -23,8 +23,11 @@ SCHEMA = """CREATE TABLE IF NOT EXISTS feedback (
     system_correct INTEGER,                  -- 1 yes, 0 no, NULL not answered
     correct_ata2 TEXT,                       -- filled when system_correct = 0 (or = predicted when 1)
     action_fixed TEXT,                       -- one of the recommended actions, or free text
-    comment TEXT
+    comment TEXT,
+    sdr_row_id INTEGER,                      -- simulated feedback: the SDR report it came from (full labels)
+    round INTEGER                            -- simulated feedback: which feedback round
 )"""
+MIGRATIONS = {"sdr_row_id": "INTEGER", "round": "INTEGER"}  # columns added after the first version
 
 
 def db_path(cfg: dict | None = None) -> Path:
@@ -37,7 +40,27 @@ def db_path(cfg: dict | None = None) -> Path:
 def connect(path: Path | None = None) -> sqlite3.Connection:
     con = sqlite3.connect(path or db_path())
     con.execute(SCHEMA)
+    have = {r[1] for r in con.execute("PRAGMA table_info(feedback)")}
+    for col, typ in MIGRATIONS.items():  # upgrade a database created by an older version
+        if col not in have:
+            con.execute(f"ALTER TABLE feedback ADD COLUMN {col} {typ}")
     return con
+
+
+def add_many(records: list[dict], path: Path | None = None) -> None:
+    if not records:
+        return
+    ts = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    recs = [{"ts": ts, "source": "app", **r} for r in records]
+    cols = list(recs[0])
+    with connect(path) as con:
+        con.executemany(f"INSERT INTO feedback ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))})",
+                        [[r[c] for c in cols] for r in recs])
+
+
+def delete_source(source: str, path: Path | None = None) -> None:
+    with connect(path) as con:
+        con.execute("DELETE FROM feedback WHERE source = ?", (source,))
 
 
 def add(record: dict, path: Path | None = None) -> int:

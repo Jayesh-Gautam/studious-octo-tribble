@@ -225,3 +225,20 @@ The automatic suggestions are often wrong (`MIA` is an airport, not MAINTENANCE)
 **Explainability ("Under the hood").** Every intermediate is shown: cleaned, masked, normalised and lemmatised text, the top-3 probabilities per head, per-stage timings, and the exact evidence prompt. A reviewer can trace any output back to its inputs.
 
 **Safety.** The disclaimer is always visible. References are presented as pointers ("must come from approved OEM data"). The LLM is forbidden from writing procedures, and its output is mechanically checked.
+
+## Phase 9: Feedback learning loop
+
+**Why a time-ordered simulation?** Real feedback arrives after deployment. Feeding 2024 back in quarterly rounds and measuring on 2025 mimics that: the model is always evaluated on the *future*.
+
+**Why a control?** Any extra training changes a model. The control gets the same number of steps on old data only, so feedback-minus-control isolates the value of the new information.
+
+**Replay against catastrophic forgetting.** Fine-tuning only on the newest feedback would overwrite what the model knew about rarer, older fault types. Mixing in a random 50k sample of the original training data keeps the old knowledge; a lower learning rate (1e-5) makes the update a nudge, not a re-training.
+
+**Partial labels.** Technicians in the app confirm or correct only the ATA chapter. Missing labels for the JASC and condition heads are marked -100 and ignored by the loss, so those heads aren't trained on guesses.
+
+**What we learned.**
+- Feedback pays off where the label distribution moves: part-condition codes (+2.5 macro-F1 vs control), and retrieval through simply *indexing* recent cases (+2.5 Hit@5).
+- It doesn't pay off for the ATA chapter, which is stable and already well learned.
+- So a deployed AeroFix should prioritise adding confirmed reports to the index, and periodically refresh the condition head.
+
+**Honest plotting.** The first figure zoomed the y-axis so 0.8 points of noise looked like a crash. The final figure uses a minimum 0.03 span per panel, and shows part condition (where the effect is) next to ATA (where it isn't).

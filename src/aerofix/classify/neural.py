@@ -89,7 +89,10 @@ def train(model, train_seqs, train_y: dict[str, np.ndarray], val_seqs, val_y: di
             ids, mask = pad_batch([train_seqs[i] for i in b], pad_id)
             with torch.autocast("cuda", dtype=torch.float16, enabled=use_amp):
                 logits = model(ids.to(device), mask.to(device))
-                loss = sum(F.cross_entropy(logits[t].float(), ys[t][b].to(device), weight=w[t]) for t in TARGETS)
+                # Label -100 = unknown for that head (e.g. app feedback gives only the ATA chapter): ignored.
+                # A head with no known label in the batch is skipped (its mean loss would be 0/0 = NaN).
+                loss = sum(F.cross_entropy(logits[t].float(), ys[t][b].to(device), weight=w[t], ignore_index=-100)
+                           for t in TARGETS if (ys[t][b] != -100).any())
             opt.zero_grad(set_to_none=True)
             scaler.scale(loss).backward()
             scaler.unscale_(opt)

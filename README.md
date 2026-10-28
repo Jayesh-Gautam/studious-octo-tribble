@@ -64,6 +64,7 @@ python -m aerofix.retrieve.evaluate      # Phase 5: train bi-/cross-encoder, eva
 python -m aerofix.recommend.evaluate     # Phase 6: canonical actions + action/reference recommenders (~10 min)
 python -m aerofix.rag.docs               # Phase 7: parse FAA PDFs into 7k cited passages (~2 min)
 python -m aerofix.rag.evaluate           # Phase 7: 50 cited LLM summaries + checks (~6 min; add --model llama3.2:3b to compare)
+python -m aerofix.feedback.simulate      # Phase 9: 3 simulated feedback rounds + learning curve (~15 min)
 ```
 
 Two documents must be downloaded by hand from [drs.faa.gov](https://drs.faa.gov), because that site has no stable PDF links. Save them into `data/raw/docs/` as `TCDS_A28NM.pdf` (A320 family) and `TCDS_A16WE.pdf` (Boeing 737).

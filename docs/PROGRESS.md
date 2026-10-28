@@ -11,7 +11,7 @@
 | 6. Recommenders | Done |
 | 7. RAG + LLM summary | Done |
 | 8. App | Done |
-| 9. Feedback loop | Not started |
+| 9. Feedback loop | Done |
 | 10. Final evaluation | Not started |
 
 ## Phase 0: Setup (2026-10-28)
@@ -293,3 +293,35 @@ Outputs:
 - FastAPI TestClient: `/health`, `/advise` with LLM, 422 on invalid input, `/feedback`.
 
 **Tests:** 89 passed.
+
+## Phase 9: Feedback learning loop (2026-10-28)
+
+Command: `python -m aerofix.feedback.simulate` (~15 min; `--report-only` redraws from the saved CSV).
+Outputs: `reports/feedback_loop.md`, `reports/learning_curve.png`, `models/feedback_loop/` (round classifiers, `learning_curve.csv`). Production models are unchanged.
+
+**Simulation:**
+- Models trained on ≤ 2023 are "deployed" in 2024.
+- Quarterly feedback rounds: R1 Jan–Mar, R2 Apr–Jun, R3 Jul–Sep 2024, with 8.4k / 16.8k / 25.8k cumulative reports.
+- Each round is written to SQLite (`source='simulated'`) and read back for retraining.
+- **Classifier:** one more epoch from the previous round's DistilBERT on feedback + 50k replay, at a lower learning rate (1e-5).
+- **Control:** the same steps on old data only.
+- **Retrieval:** feedback reports join the index; the bi-encoder is fine-tuned on triples anchored on feedback reports.
+- Measured on 2,000 fixed 2025 test reports.
+
+**After 3 rounds**
+| Metric | Deployed (R0) | Feedback (R3) | Control (R3) |
+|---|---|---|---|
+| ATA macro-F1 | 0.861 | 0.855 | 0.857 |
+| **Part-condition macro-F1** | 0.606 | **0.621** | 0.597 |
+| Retrieval Hit@5 (index growth / + fine-tune) | 0.647 | 0.671 / **0.673** | – |
+
+**Findings**
+- **Feedback helps where labels drift.** Part condition is +2.5 points vs the control; the control decays because retraining on old data pulls the model further from current code usage.
+- **ATA chapter:** no measurable effect. It's already at 0.86 and the chapters don't drift; changes stay below 1 point (noise).
+- **Retrieval:** +2.5 Hit@5 points come almost entirely from **index growth** (recent similar cases become findable). Bi-encoder fine-tuning adds only +0.15.
+
+**Changes:**
+- The feedback store gained `sdr_row_id` / `round` columns, with an automatic migration for older databases.
+- The training loop supports unknown labels (-100), so app feedback that gives only the ATA chapter can still train the other heads safely.
+
+**Tests:** 91 passed.
