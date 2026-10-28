@@ -106,8 +106,16 @@ class PassageIndex:
     def search(self, problem: str, ata2: str, k: int = 3) -> list[dict]:
         """Query = chapter title + fault text, so 'DAMPER LEAKING' is read in the context of DOORS."""
         from aerofix.retrieve.train import encode
-        _, nn = self.index.search(encode(self.enc, [f"{title(ata2)}: {problem}"]), k)
-        return [self.df.iloc[i][["label", "heading", "text"]].to_dict() for i in nn[0] if i >= 0]
+        _, nn = self.index.search(encode(self.enc, [f"{title(ata2)}: {problem}"]), 4 * k)
+        out, seen = [], set()
+        for i in nn[0]:  # several chunks can come from one page: show each page once
+            if i < 0 or self.df.label.iloc[i] in seen:
+                continue
+            seen.add(self.df.label.iloc[i])
+            out.append({**self.df.iloc[i][["label", "heading", "text", "doc"]].to_dict(), "page": int(self.df.page.iloc[i])})
+            if len(out) == k:
+                break
+        return out
 
 
 def trim_to_sentence(text: str) -> str:

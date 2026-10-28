@@ -355,3 +355,27 @@ Command: `python -m aerofix.eval.final` (~1 min; assembles from saved artefacts)
 - [x] Every model has a baseline comparison on the 2025 test set.
 - [x] Leakage ablation and learning curve are in the report.
 - [x] README reproduces everything from a fresh clone (`download_data.py` + `aerofix.eval.final --full`), except the two optional hand-downloaded TCDS PDFs.
+
+## Extra: AeroFix Console (React + shadcn/ui) (2026-10-28)
+
+A presentation-grade web front end, served by the same FastAPI process: `uvicorn aerofix.app.api:app --port 8000` → http://localhost:8000.
+
+**Frontend:** `frontend/` (Vite, React 19, TypeScript, Tailwind v4, shadcn/ui with Radix and the Nova preset, Recharts). App shell with a collapsible sidebar, live "Models ready / LLM online" status, and light/dark mode.
+
+**Pages**
+- **Fault advisor:**
+  - input panel with example chips; headline cards (system, condition, JASC code, response time)
+  - **AI summary streamed live, with clickable citations:** `[Case n]` opens the original SDR report, and FAA labels open the PDF at the exact page
+  - action bars, references table (specific/generic), feedback form
+  - tabs: Similar cases (with the query's words highlighted), FAA documents (**View page** in-app viewer / **Open full document** at `#page=N`), Under the hood (step timings, text transformations, top-3 per model head)
+- **Feedback log**, **Model performance** (KPIs + charts for classification, leakage, cross-family, retrieval, recommenders, LLM checks, learning curves, LM perplexity, segmentation), **Dataset**, **About**.
+- Deep links (`?page=`, `?q=&family=&variant=&tab=`) for scripted demos.
+
+**API additions:**
+- `POST /api/advise` returns a `request_id`; `GET /api/summary/{id}` streams the summary as server-sent events.
+- `GET /api/documents/{doc}` serves a whitelisted public PDF; `.../pages/{n}` returns the cited page ±1 as a small PDF (~0.5 s).
+- `GET /api/cases/{id}`, `/api/meta`, `/api/metrics`, `/api/dataset`, `/api/feedback`. The old routes still work.
+
+**Also changed:** passages are now deduplicated by page (two chunks of the same page used to appear twice).
+
+**Verified:** endpoint tests (stream, PDF excerpt, range requests, 404 for unknown documents), plus headless-Edge screenshots of the advisor (overview, cases, documents), performance and dataset pages. Chart animations are disabled so the charts render instantly.

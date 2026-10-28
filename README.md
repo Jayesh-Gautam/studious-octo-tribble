@@ -132,8 +132,19 @@ reports/      figures and result tables
 
 ## Run the app
 
+**AeroFix Console** (React + shadcn/ui, recommended for presentations):
+
 ```powershell
-ollama serve                                         # if Ollama is not already running
-streamlit run src/aerofix/app/streamlit_app.py        # UI at http://localhost:8501 (~35 s model load)
-uvicorn aerofix.app.api:app --port 8000               # optional API: POST /advise, POST /feedback, docs at /docs
+cd frontend; npm install; npm run build; cd ..       # once (needs Node.js 20+)
+uvicorn aerofix.app.api:app --port 8000               # console + API at http://localhost:8000 (~40 s model load)
 ```
+
+Pages: Fault advisor (streamed cited summary; citations open the original report or the exact FAA PDF page), Feedback log, Model performance, Dataset, About. Demo deep links: `http://localhost:8000/?q=FWD%20lav%20smoke%20detector%20inop&family=B737&variant=737-800&tab=documents`, `http://localhost:8000/?page=performance`. API docs at `/docs`.
+
+**Streamlit app** (simpler, single page):
+
+```powershell
+streamlit run src/aerofix/app/streamlit_app.py        # http://localhost:8501
+```
+
+Both need Ollama running for the AI summary (`ollama serve`); everything else works without it.
