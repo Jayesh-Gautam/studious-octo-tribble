@@ -45,6 +45,10 @@ python -m aerofix.eval.eda       # Phase 1: reports/eda.md + reports/figures/
 python -c "import nltk; [nltk.download(p) for p in ('wordnet','omw-1.4','averaged_perceptron_tagger_eng','stopwords')]"
 python -m aerofix.preprocess.build_norm   # Phase 2: fit normaliser, normalise corpus (~11 min, mostly lemmatisation)
 python -m aerofix.eval.normalisation      # Phase 2: reports/normalisation.md (~10 min)
+python -m aerofix.segment.sample          # Phase 3: draw the 400 reports to annotate (once)
+streamlit run src/aerofix/segment/annotate_app.py   # Phase 3: annotate (see docs/ANNOTATION_GUIDE.md)
+python -m aerofix.segment.evaluate        # Phase 3: rules vs CRF vs DistilBERT -> reports/segmentation.md
+python -m aerofix.segment.apply           # Phase 3: segment the corpus with the best model (~15 min)
 ```
 
 Two documents must be downloaded by hand from [drs.faa.gov](https://drs.faa.gov), because that site has no stable PDF links. Save them into `data/raw/docs/` as `TCDS_A28NM.pdf` (A320 family) and `TCDS_A16WE.pdf` (Boeing 737).

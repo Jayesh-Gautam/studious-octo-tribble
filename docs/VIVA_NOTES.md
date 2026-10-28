@@ -73,3 +73,28 @@ The automatic suggestions are often wrong (`MIA` is an airport, not MAINTENANCE)
 - **WordNet lemmatisation** needs a POS tag (REPLACED as a verb → REPLACE). It gives readable output but is about 70× slower (10 min).
 
 **Honest negative result.** On TF-IDF + logistic regression, none of the normalisation steps changes val macro-F1 by more than noise. A linear model with 100k training reports sees each common variant often enough to weight it on its own. We keep normalisation because it is expected to help retrieval of short queries (Phase 5) and the embedding-based models (Phase 4), and those phases measure it.
+
+## Phase 3: Problem / action segmentation
+
+**Why segment at all?** At query time the technician only knows the *problem*. If the classifier is trained on the full report, it learns from the *action* ("REPLACED EMERGENCY LIGHT BATTERY") and looks better in evaluation than it will be in use. Training on `problem_masked` matches what the deployed system actually sees.
+
+**Annotation design.**
+- Chunk-level clicking (split at punctuation, step markers and action verbs) with an optional split *inside* a chunk. This keeps 400 reports at a few hours of work while still giving token-level labels.
+- Train/dev reports are pre-filled by the rule baseline to save time.
+- Test reports are **not** pre-filled. Otherwise the annotator might accept rule mistakes on test and the rule baseline would look better than it is (anchoring bias).
+
+**BIO tags.** Labels are encoded as B-X (first token of a span) / I-X (inside). Without B tags, two adjacent spans of the same type couldn't be told apart, and the CRF transition weights couldn't learn "a new span starts here".
+
+**CRF vs BERT.**
+- The **CRF** combines hand-made features with *transition* weights between tags, and Viterbi decoding returns the best whole sequence. Features encode human cues: past tense, an action-verb lexicon, punctuation before the word, position in the report, and whether an action verb has appeared yet.
+- **DistilBERT** learns its own features from context, but 280 reports is very little data for a 66M-parameter model. The learning curve shows whether more annotation would help.
+
+**Own training loop instead of HF Trainer.**
+- AdamW with weight decay, 10% linear warm-up then linear decay, fp16 autocast with GradScaler, gradient clipping, and early stopping on dev with the best weights restored.
+- Every step is visible and explainable, and there's no extra dependency.
+
+**Sub-word labels.** WordPiece splits a word into pieces. Only the first piece is trained and predicted; the others get label -100, which the loss ignores. So each word is counted exactly once.
+
+**Two metrics.**
+- **Token F1** gives partial credit for nearly-right boundaries.
+- **Span F1** is strict: start, end and label must all match. A segmenter that's off by one word gets decent token F1 but zero span credit for that span. Both are reported because they answer different questions.

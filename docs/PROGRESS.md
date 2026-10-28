@@ -5,7 +5,7 @@
 | 0. Setup | Done |
 | 1. Data pipeline + EDA | Done |
 | 2. Text normalisation | Done (abbrev.csv awaiting your review) |
-| 3. Problem / action segmentation | Not started |
+| 3. Problem / action segmentation | Tooling done, waiting for annotation (400 reports) |
 | 4. Classification | Not started |
 | 5. Retrieval | Not started |
 | 6. Recommenders | Not started |
@@ -104,3 +104,17 @@ Everything is fitted on train and measured on val; test was not used.
 - Lemmatisation takes ~10 min for the corpus because of the POS tagger.
 
 **Your action:** review `data/annotations/abbrev.csv` (153 rows: 123 to expand, 16 marked ambiguous, 14 kept as-is). Change an `expansion` or set `ambiguous` to yes/no, then rerun the two commands above.
+
+## Phase 3: Problem / action segmentation (in progress)
+
+**Done**
+- Sample of 400 reports from 1995–2024: 280 train / 60 dev / 60 test, balanced by family and era (`data/annotations/seg_sample.parquet`).
+- Annotation app, annotation guide, rule baseline, CRF, DistilBERT (own PyTorch loop), evaluation with token and span F1 plus a learning curve, and corpus application.
+- Dry run on rule-generated "silver" labels to check the pipeline end to end (numbers not reported):
+  - All three methods train, score and save.
+  - Corpus inference takes ~16 min (BERT) or ~11 min (CRF).
+- Tests: 64 passed.
+
+**Waiting for:** annotation of the 400 reports (`streamlit run src/aerofix/segment/annotate_app.py`).
+- Train/dev reports are pre-filled by the rules; test reports start blank (so the evaluation isn't biased towards the rules).
+- Then run `python -m aerofix.segment.evaluate` and `python -m aerofix.segment.apply`.
