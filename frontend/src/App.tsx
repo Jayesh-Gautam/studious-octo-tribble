@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useTheme } from 'next-themes'
 import { Moon, Sun } from 'lucide-react'
-import { AppSidebar, type PageId, PAGES } from '@/components/app-sidebar'
+import { AppSidebar, type PageId, PAGES, PRODUCTION_PAGES } from '@/components/app-sidebar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -24,9 +24,13 @@ function StatusDot({ ok, label, title }: { ok: boolean | null; label: string; ti
 }
 
 export default function App() {
+  // Two dashboards from one build: /production is the clean operational app, / the presentation console.
+  const production = window.location.pathname.replace(/\/+$/, '').endsWith('/production')
+  const allowed = (id: PageId | null) => !!id && PAGES.some((p) => p.id === id) && (!production || PRODUCTION_PAGES.includes(id))
   // Deep link: ?page=performance opens a page directly (handy for presentations).
   const initial = new URLSearchParams(window.location.search).get('page') as PageId | null
-  const [page, setPage] = useState<PageId>(PAGES.some((p) => p.id === initial) ? initial! : 'advisor')
+  const [page, setPage] = useState<PageId>(allowed(initial) ? initial! : 'advisor')
+  useEffect(() => { document.title = production ? 'AeroFix' : 'AeroFix · Maintenance fault advisor' }, [production])
   const [health, setHealth] = useState<Health | null>(null)
   const { resolvedTheme, setTheme } = useTheme()
 
@@ -40,14 +44,14 @@ export default function App() {
   const current = PAGES.find((p) => p.id === page)!
   return (
     <SidebarProvider>
-      <AppSidebar page={page} onNavigate={setPage} />
+      <AppSidebar page={page} onNavigate={setPage} production={production} />
       <SidebarInset>
         <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-3 border-b bg-background/90 px-4 backdrop-blur">
           <SidebarTrigger />
           <Separator orientation="vertical" className="h-5" />
           <div className="min-w-0 flex-1">
             <h1 className="truncate text-sm font-semibold">{current.title}</h1>
-            <p className="hidden truncate text-xs text-muted-foreground sm:block">{current.subtitle}</p>
+            {!production && <p className="hidden truncate text-xs text-muted-foreground sm:block">{current.subtitle}</p>}
           </div>
           <div className="hidden items-center gap-2 md:flex">
             <StatusDot ok={health ? health.models_loaded : null} label={health?.models_loaded ? 'Models ready' : 'Models'} title="NLP models loaded on the server" />
@@ -59,7 +63,7 @@ export default function App() {
           </Button>
         </header>
         <main className="flex-1 p-4 md:p-6">
-          {page === 'advisor' && <AdvisorPage />}
+          {page === 'advisor' && <AdvisorPage production={production} />}
           {page === 'performance' && <PerformancePage />}
           {page === 'dataset' && <DatasetPage />}
           {page === 'feedback' && <FeedbackPage />}

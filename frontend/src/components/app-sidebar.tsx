@@ -1,4 +1,4 @@
-import { BarChart3, Database, Info, MessageSquareText, Plane, Wrench } from 'lucide-react'
+import { ArrowLeftRight, BarChart3, Database, Info, MessageSquareText, Plane, Wrench } from 'lucide-react'
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail,
@@ -14,8 +14,14 @@ export const PAGES: { id: PageId; title: string; subtitle: string; icon: typeof 
   { id: 'about', title: 'About AeroFix', subtitle: 'How the system works, data sources and limitations', icon: Info, group: 'Project' },
 ]
 
-export function AppSidebar({ page, onNavigate }: { page: PageId; onNavigate: (p: PageId) => void }) {
-  const groups = [...new Set(PAGES.map((p) => p.group))]
+/** Pages shown in the clean production app (served at /production). */
+export const PRODUCTION_PAGES: PageId[] = ['advisor', 'feedback']
+
+export function AppSidebar({ page, onNavigate, production }: {
+  page: PageId; onNavigate: (p: PageId) => void; production: boolean
+}) {
+  const visible = PAGES.filter((p) => !production || PRODUCTION_PAGES.includes(p.id))
+  const groups = [...new Set(visible.map((p) => p.group))]
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -27,7 +33,7 @@ export function AppSidebar({ page, onNavigate }: { page: PageId; onNavigate: (p:
               </div>
               <div className="grid flex-1 text-left leading-tight">
                 <span className="truncate font-semibold">AeroFix</span>
-                <span className="truncate text-xs text-muted-foreground">Maintenance fault advisor</span>
+                <span className="truncate text-xs text-muted-foreground">{production ? 'Maintenance assistant' : 'Maintenance fault advisor'}</span>
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -36,10 +42,10 @@ export function AppSidebar({ page, onNavigate }: { page: PageId; onNavigate: (p:
       <SidebarContent>
         {groups.map((g) => (
           <SidebarGroup key={g}>
-            <SidebarGroupLabel>{g}</SidebarGroupLabel>
+            {!production && <SidebarGroupLabel>{g}</SidebarGroupLabel>}
             <SidebarGroupContent>
               <SidebarMenu>
-                {PAGES.filter((p) => p.group === g).map((p) => (
+                {visible.filter((p) => p.group === g).map((p) => (
                   <SidebarMenuItem key={p.id}>
                     <SidebarMenuButton isActive={page === p.id} tooltip={p.title} onClick={() => onNavigate(p.id)}>
                       <p.icon />
@@ -53,10 +59,22 @@ export function AppSidebar({ page, onNavigate }: { page: PageId; onNavigate: (p:
         ))}
       </SidebarContent>
       <SidebarFooter>
-        <div className="rounded-md border bg-sidebar-accent/40 p-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
-          <p className="font-medium text-foreground">Fleet: A320 family · Boeing 737</p>
-          <p>540,008 FAA reports · local models only</p>
-        </div>
+        {!production && (
+          <div className="rounded-md border bg-sidebar-accent/40 p-2 text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+            <p className="font-medium text-foreground">Fleet: A320 family · Boeing 737</p>
+            <p>540,008 FAA reports · local models only</p>
+          </div>
+        )}
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip={production ? 'Presentation console' : 'Production app'}>
+              <a href={production ? '/' : '/production'}>
+                <ArrowLeftRight />
+                <span>{production ? 'Open presentation console' : 'Open production app'}</span>
+              </a>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

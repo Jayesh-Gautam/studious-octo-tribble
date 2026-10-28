@@ -157,18 +157,18 @@ Token-level agreement between the rule baseline and the gold labels: 76.2% on av
 
 ## 6. Retrieval (2025 test)
 
-| method | Hit@5 | Hit@10 | P@5 | MRR@10 | NDCG@5 | ms_per_query |
-|---|---|---|---|---|---|---|
-| MiniLM fine-tuned | 0.665 | 0.7375 | 0.4303 | 0.5378 | 0.634 | 0.6 |
-| MiniLM fine-tuned + cross-encoder rerank | 0.645 | 0.7155 | 0.4314 | 0.536 | 0.6337 | 16.6 |
-| Hybrid RRF (BM25 + lemma + MiniLM fine-tuned) + cross-encoder rerank | 0.644 | 0.7145 | 0.4267 | 0.53 | 0.6259 | 26.2 |
-| Hybrid RRF (BM25 + lemma + MiniLM fine-tuned) | 0.662 | 0.7335 | 0.4173 | 0.5354 | 0.6252 | 10.2 |
-| MiniLM zero-shot | 0.6325 | 0.703 | 0.4034 | 0.512 | 0.6156 | 0.6 |
-| Average Word2Vec | 0.6205 | 0.683 | 0.379 | 0.4883 | 0.6068 | 0.5 |
-| BM25 + stem | 0.622 | 0.694 | 0.3699 | 0.4916 | 0.5951 | 9.7 |
-| BM25 + abbrev + spelling | 0.611 | 0.6845 | 0.3626 | 0.4821 | 0.5916 | 9.9 |
-| BM25 + lemma | 0.62 | 0.693 | 0.3674 | 0.4861 | 0.5892 | 9.7 |
-| BM25 raw (tokenised) | 0.608 | 0.685 | 0.3586 | 0.4777 | 0.5865 | 9.7 |
+| method                                                               | Hit@5  | Hit@10 | P@5    | MRR@10 | NDCG@5 | ms_per_query |
+| -------------------------------------------------------------------- | ------ | ------ | ------ | ------ | ------ | ------------ |
+| MiniLM fine-tuned                                                    | 0.665  | 0.7375 | 0.4303 | 0.5378 | 0.634  | 0.6          |
+| MiniLM fine-tuned + cross-encoder rerank                             | 0.645  | 0.7155 | 0.4314 | 0.536  | 0.6337 | 16.6         |
+| Hybrid RRF (BM25 + lemma + MiniLM fine-tuned) + cross-encoder rerank | 0.644  | 0.7145 | 0.4267 | 0.53   | 0.6259 | 26.2         |
+| Hybrid RRF (BM25 + lemma + MiniLM fine-tuned)                        | 0.662  | 0.7335 | 0.4173 | 0.5354 | 0.6252 | 10.2         |
+| MiniLM zero-shot                                                     | 0.6325 | 0.703  | 0.4034 | 0.512  | 0.6156 | 0.6          |
+| Average Word2Vec                                                     | 0.6205 | 0.683  | 0.379  | 0.4883 | 0.6068 | 0.5          |
+| BM25 + stem                                                          | 0.622  | 0.694  | 0.3699 | 0.4916 | 0.5951 | 9.7          |
+| BM25 + abbrev + spelling                                             | 0.611  | 0.6845 | 0.3626 | 0.4821 | 0.5916 | 9.9          |
+| BM25 + lemma                                                         | 0.62   | 0.693  | 0.3674 | 0.4861 | 0.5892 | 9.7          |
+| BM25 raw (tokenised)                                                 | 0.608  | 0.685  | 0.3586 | 0.4777 | 0.5865 | 9.7          |
 
 The local LLM (qwen2.5:7b-instruct) judged whether each of the top 5 results describes the same kind of fault, for 50 test queries (599 distinct pairs). Agreement between LLM verdict and proxy label: **63.4%**.
 

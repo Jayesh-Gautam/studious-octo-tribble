@@ -280,4 +280,10 @@ app.include_router(router)  # backward-compatible un-prefixed routes
 
 _DIST = Path(__file__).resolve().parents[3] / "frontend" / "dist"
 if _DIST.exists():  # built console: one server for API + UI
-    app.mount("/", StaticFiles(directory=_DIST, html=True), name="console")
+    @app.get("/production", include_in_schema=False)
+    @app.get("/production/", include_in_schema=False)
+    def production_app():
+        """Same build, clean operational view (the page itself checks the path)."""
+        return FileResponse(_DIST / "index.html")
+
+    app.mount("/", StaticFiles(directory=_DIST, html=True), name="console")  # presentation console at /

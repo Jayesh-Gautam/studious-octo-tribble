@@ -1,18 +1,18 @@
 # Progress
 
-| Phase | Status |
-|---|---|
-| 0. Setup | Done |
-| 1. Data pipeline + EDA | Done |
-| 2. Text normalisation | Done (abbrev.csv awaiting your review) |
+| Phase                            | Status                                                 |
+| -------------------------------- | ------------------------------------------------------ |
+| 0. Setup                         | Done                                                   |
+| 1. Data pipeline + EDA           | Done                                                   |
+| 2. Text normalisation            | Done (abbrev.csv awaiting your review)                 |
 | 3. Problem / action segmentation | Done (silver LLM labels; human check of test optional) |
-| 4. Classification | Done |
-| 5. Retrieval | Done |
-| 6. Recommenders | Done |
-| 7. RAG + LLM summary | Done |
-| 8. App | Done |
-| 9. Feedback loop | Done |
-| 10. Final evaluation | Done |
+| 4. Classification                | Done                                                   |
+| 5. Retrieval                     | Done                                                   |
+| 6. Recommenders                  | Done                                                   |
+| 7. RAG + LLM summary             | Done                                                   |
+| 8. App                           | Done                                                   |
+| 9. Feedback loop                 | Done                                                   |
+| 10. Final evaluation             | Done                                                   |
 
 ## Phase 0: Setup (2026-10-28)
 

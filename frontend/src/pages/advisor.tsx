@@ -284,7 +284,8 @@ function FeedbackCard({ advice, meta }: { advice: Advice; meta: Meta | null }) {
 }
 
 // ------------------------------------------------------------------ page
-export default function AdvisorPage() {
+/** production = the clean operational view: no explanations, disclaimer banner or "under the hood" details. */
+export default function AdvisorPage({ production = false }: { production?: boolean }) {
   const [meta, setMeta] = useState<Meta | null>(null)
   const [advice, setAdvice] = useState<Advice | null>(null)
   const [busy, setBusy] = useState(false)
@@ -302,7 +303,7 @@ export default function AdvisorPage() {
     if (!q) return
     const family = p.get('family') === 'B737' ? 'B737' : 'A320'
     run({ family, variant: p.get('variant') ?? (family === 'B737' ? '737-800' : 'A320'), stage: null, text: q })
-      .then(() => p.get('tab') && setTab(p.get('tab')!))
+      .then(() => p.get('tab') && !(production && p.get('tab') === 'hood') && setTab(p.get('tab')!))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -326,20 +327,22 @@ export default function AdvisorPage() {
   const openedCase = advice?.cases.find((c) => c.row_id === openCase)
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
+    <div className={`grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)] ${production ? '[&_[data-slot=card-description]]:hidden' : ''}`}>
       <div className="space-y-6">
         <InputPanel meta={meta} busy={busy} onSubmit={run} />
-        <HowItWorks />
+        {!production && <HowItWorks />}
       </div>
 
       <div ref={resultsRef} className="min-w-0 scroll-mt-20 space-y-6">
-        <Alert className="border-[color-mix(in_oklab,var(--series-4)_45%,var(--border))]">
-          <ShieldAlert />
-          <AlertTitle>Decision support only</AlertTitle>
-          <AlertDescription>
-            AeroFix summarises public FAA reports and guidance; it contains no OEM procedures. Always follow the approved AMM/SRM/FIM.
-          </AlertDescription>
-        </Alert>
+        {!production && (
+          <Alert className="border-[color-mix(in_oklab,var(--series-4)_45%,var(--border))]">
+            <ShieldAlert />
+            <AlertTitle>Decision support only</AlertTitle>
+            <AlertDescription>
+              AeroFix summarises public FAA reports and guidance; it contains no OEM procedures. Always follow the approved AMM/SRM/FIM.
+            </AlertDescription>
+          </Alert>
+        )}
 
         {!advice && !busy && (
           <EmptyState icon={<FileSearch />} title="No fault analysed yet">
@@ -376,7 +379,7 @@ export default function AdvisorPage() {
                 <TabsTrigger value="overview"><Sparkles /> Overview</TabsTrigger>
                 <TabsTrigger value="evidence"><History /> Similar cases <Badge variant="secondary" className="ml-1">{advice.cases.length}</Badge></TabsTrigger>
                 <TabsTrigger value="documents"><BookOpen /> FAA documents <Badge variant="secondary" className="ml-1">{advice.passages.length}</Badge></TabsTrigger>
-                <TabsTrigger value="hood"><Cpu /> Under the hood</TabsTrigger>
+                {!production && <TabsTrigger value="hood"><Cpu /> Under the hood</TabsTrigger>}
               </TabsList>
 
               {/* ---- overview ---- */}
@@ -426,7 +429,7 @@ export default function AdvisorPage() {
                           ))}
                         </TableBody>
                       </Table>
-                      <p className="mt-3 text-xs text-muted-foreground">Pointers only: the procedure must come from the approved OEM maintenance data.</p>
+                      {!production && <p className="mt-3 text-xs text-muted-foreground">Pointers only: the procedure must come from the approved OEM maintenance data.</p>}
                     </CardContent>
                   </Card>
                 </div>
@@ -435,7 +438,7 @@ export default function AdvisorPage() {
 
               {/* ---- evidence ---- */}
               <TabsContent value="evidence" className="space-y-4 pt-2">
-                <p className="text-sm text-muted-foreground">The closest past reports from the same aircraft family (2024 and earlier). Highlighted words are shared with your fault.</p>
+                {!production && <p className="text-sm text-muted-foreground">The closest past reports from the same aircraft family (2024 and earlier). Highlighted words are shared with your fault.</p>}
                 {advice.cases.map((c, i) => (
                   <Card key={c.row_id} className="gap-3">
                     <CardHeader>
@@ -463,7 +466,7 @@ export default function AdvisorPage() {
 
               {/* ---- documents ---- */}
               <TabsContent value="documents" className="space-y-4 pt-2">
-                <p className="text-sm text-muted-foreground">Passages from public FAA guidance (AMT handbooks, AC 43.13-1B) related to the predicted system. Open the exact page they come from.</p>
+                {!production && <p className="text-sm text-muted-foreground">Passages from public FAA guidance (AMT handbooks, AC 43.13-1B) related to the predicted system. Open the exact page they come from.</p>}
                 {advice.passages.map((p) => (
                   <Card key={p.label} className="gap-3">
                     <CardHeader>
@@ -483,8 +486,8 @@ export default function AdvisorPage() {
                 ))}
               </TabsContent>
 
-              {/* ---- under the hood ---- */}
-              <TabsContent value="hood" className="space-y-6 pt-2">
+              {/* ---- under the hood (presentation console only) ---- */}
+              {!production && <TabsContent value="hood" className="space-y-6 pt-2">
                 <Card>
                   <CardHeader><CardTitle>Pipeline timing</CardTitle><CardDescription>Server time per step for this request.</CardDescription></CardHeader>
                   <CardContent>
@@ -521,7 +524,7 @@ export default function AdvisorPage() {
                       </Card>
                     ))}
                 </div>
-              </TabsContent>
+              </TabsContent>}
             </Tabs>
           </div>
         )}
