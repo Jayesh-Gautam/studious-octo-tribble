@@ -208,3 +208,20 @@ The automatic suggestions are often wrong (`MIA` is an airport, not MAINTENANCE)
 - Qwen 2.5 7B takes ~5.5–6 s end to end, with 0 hallucinated references.
 - Llama 3.2 3B takes ~4.4 s, with 4% hallucinated references.
 - In the app the structured results appear immediately and the summary streams, so the technician isn't waiting on the LLM.
+
+## Phase 8: App
+
+**One pipeline, two front ends.** `Advisor` (`pipeline.py`) holds all models. Streamlit uses it in-process (cached with `st.cache_resource`, so it loads once per server, not per user). FastAPI wraps the same object for integration with other tools. There is no duplicated logic.
+
+**Perceived latency.**
+- The structured answer (system, condition, actions, references, cases) is ready in ~0.15 s and rendered first.
+- The LLM summary streams token by token with `st.write_stream`, so text appears within about a second even though the full summary takes ~5 s.
+- After streaming, the summary is trimmed to complete sentences and checked by the citation validator; the badge shows the result.
+
+**Warm-up.** One-off costs (WordNet/tagger loading, CUDA kernel set-up, loading the LLM into GPU memory) are paid at start-up, not on the first user query. Ollama's `keep_alive` keeps the model resident.
+
+**Session state.** Results are stored in `st.session_state`, so using the feedback form doesn't rerun the models or regenerate the summary.
+
+**Explainability ("Under the hood").** Every intermediate is shown: cleaned, masked, normalised and lemmatised text, the top-3 probabilities per head, per-stage timings, and the exact evidence prompt. A reviewer can trace any output back to its inputs.
+
+**Safety.** The disclaimer is always visible. References are presented as pointers ("must come from approved OEM data"). The LLM is forbidden from writing procedures, and its output is mechanically checked.

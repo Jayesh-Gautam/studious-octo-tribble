@@ -10,7 +10,7 @@
 | 5. Retrieval | Done |
 | 6. Recommenders | Done |
 | 7. RAG + LLM summary | Done |
-| 8. App | Not started |
+| 8. App | Done |
 | 9. Feedback loop | Not started |
 | 10. Final evaluation | Not started |
 
@@ -261,5 +261,35 @@ Outputs:
 - The mask token is shown as `<ref>` because the model was citing `[REF]`.
 
 **Open:** the end-to-end target is < 5 s. Qwen finishes in ~5.9 s; Llama 3.2 3B meets the target (4.4 s) at a small accuracy cost. In the app the structured results appear in ~0.15 s and the summary streams.
+
+**Tests:** 89 passed.
+
+## Phase 8: App (2026-10-28)
+
+**Run:**
+- `streamlit run src/aerofix/app/streamlit_app.py` (UI, http://localhost:8501)
+- `uvicorn aerofix.app.api:app --port 8000` (API: `POST /advise`, `POST /feedback`, `GET /health`, docs at `/docs`)
+
+**Built**
+- `src/aerofix/app/streamlit_app.py`:
+  - input form: family segmented control, variant, optional stage of operation, fault text
+  - result cards: system and condition with confidence bars and runners-up, corrective actions with % bars
+  - references table: support in similar cases vs across all reports, flagged generic or specific
+  - streamed LLM summary with a citation-check badge
+  - expandable similar cases with the query's words highlighted, FAA passages, the disclaimer
+  - feedback form saved to SQLite
+  - **Under the hood** tab: every text-processing step, top-3 scores per model head, timings, and the exact prompt sent to the LLM.
+- `src/aerofix/app/api.py`: FastAPI service; the Advisor is loaded once in the lifespan hook; pydantic validation (bad family → 422).
+- `src/aerofix/feedback/store.py`: SQLite feedback store (`data/feedback/feedback.sqlite`, gitignored).
+- Warm-up at load time (WordNet/tagger, CUDA, LLM kept resident for 30 min). This cut the first query from 10.7 s to 5.6 s.
+
+**Measured (warm):**
+- Everything except the LLM: ~0.1–0.26 s; the structured results appear first.
+- The Qwen 7B summary streams in and completes in ~5–5.4 s.
+- Model loading at start-up: ~35 s.
+
+**Checks:**
+- Headless Streamlit AppTest: submit, streamed summary with a "7 citations, all found in the evidence" badge, feedback saved and cleaned up.
+- FastAPI TestClient: `/health`, `/advise` with LLM, 422 on invalid input, `/feedback`.
 
 **Tests:** 89 passed.

@@ -68,6 +68,18 @@ class Advisor:
         self.retriever = Retriever(self.docs, vec, cfg)
         self.rates = json.loads((m / "recommend" / "ref_global_rates.json").read_text())
         self.passages = PassageIndex(cfg)
+        self.warm_up()
+
+    def warm_up(self) -> None:
+        """Pay one-off costs at load time, not on the user's first query: WordNet + POS tagger
+        loading (~3.5 s), CUDA kernel set-up, and loading the LLM into GPU memory (kept 30 min)."""
+        self.advise("A320", "A320", "LAV SMOKE DETECTOR INOP", llm=False)
+        try:
+            import ollama
+            ollama.Client(host=self.cfg["llm"]["host"]).generate(model=self.cfg["llm"]["model"], prompt="",
+                                                                  keep_alive="30m")
+        except Exception:  # Ollama not running: the app still works without the summary
+            pass
 
     @torch.no_grad()
     def classify(self, problem: str) -> dict:

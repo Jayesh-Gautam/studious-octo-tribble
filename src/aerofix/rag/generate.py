@@ -130,6 +130,17 @@ def validate(summary: str, ev: Evidence) -> dict:
             "has_citation": bool(cited), "ok": bool(cited) and not invalid and not hallucinated}
 
 
+def generate_stream(ev: Evidence, cfg: dict | None = None, model: str | None = None):
+    """Yield the summary token by token (for the app); same prompt and options as generate()."""
+    import ollama
+    cfg = cfg or load_config()
+    client = ollama.Client(host=cfg["llm"]["host"])
+    for chunk in client.chat(model=model or cfg["llm"]["model"], stream=True,
+                             messages=[{"role": "system", "content": SYSTEM}, {"role": "user", "content": ev.render()}],
+                             options={"temperature": 0.2, "num_predict": 170, "num_ctx": 4096, "seed": 42}, keep_alive="30m"):
+        yield chunk["message"]["content"]
+
+
 def generate(ev: Evidence, cfg: dict | None = None, model: str | None = None) -> dict:
     import ollama
     cfg = cfg or load_config()
@@ -139,7 +150,7 @@ def generate(ev: Evidence, cfg: dict | None = None, model: str | None = None) ->
         try:
             r = client.chat(model=m, messages=[{"role": "system", "content": SYSTEM},
                                                {"role": "user", "content": ev.render()}],
-                            options={"temperature": 0.2, "num_predict": 170, "num_ctx": 4096, "seed": 42})
+                            options={"temperature": 0.2, "num_predict": 170, "num_ctx": 4096, "seed": 42}, keep_alive="30m")
             summary = trim_to_sentence(r["message"]["content"])
             return {"summary": summary, "model": m, "seconds": round(time.perf_counter() - t, 2),
                     **validate(summary, ev)}

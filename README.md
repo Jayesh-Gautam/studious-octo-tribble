@@ -91,3 +91,11 @@ reports/      figures and result tables
 ## Syllabus mapping
 
 _Filled in during Phase 10._
+
+## Run the app
+
+```powershell
+ollama serve                                         # if Ollama is not already running
+streamlit run src/aerofix/app/streamlit_app.py        # UI at http://localhost:8501 (~35 s model load)
+uvicorn aerofix.app.api:app --port 8000               # optional API: POST /advise, POST /feedback, docs at /docs
+```
