@@ -12,7 +12,7 @@
 | 7. RAG + LLM summary | Done |
 | 8. App | Done |
 | 9. Feedback loop | Done |
-| 10. Final evaluation | Not started |
+| 10. Final evaluation | Done |
 
 ## Phase 0: Setup (2026-10-28)
 
@@ -325,3 +325,33 @@ Outputs: `reports/feedback_loop.md`, `reports/learning_curve.png`, `models/feedb
 - The training loop supports unknown labels (-100), so app feedback that gives only the ATA chapter can still train the other heads safely.
 
 **Tests:** 91 passed.
+
+## Phase 10: Final evaluation and report material (2026-10-28)
+
+Command: `python -m aerofix.eval.final` (~1 min; assembles from saved artefacts). `--full` re-runs all phases from raw data first (~4–5 h).
+
+**Built**
+- `reports/RESULTS.md`:
+  - data summary
+  - headline baseline-vs-best table (parsed from the phase reports, so a re-run updates it)
+  - all classifiers on 2025 test, with the confusion matrix
+  - **leakage and cross-family ablations on test**, computed from saved predictions
+  - TF-IDF input/normalisation/stem-vs-lemma ablations (val)
+  - LM perplexity, spelling, segmentation, retrieval, recommenders, RAG (both LLMs), learning curve
+  - 20 hand-analysed failure cases
+  - limitations
+- `data/annotations/error_analysis.csv`: 20 random DistilBERT test errors, each with a root-cause category and explanation. Categories: structural boundary 6, label inconsistency 3, coding convention 3, keyword bias 2, and 6 single cases.
+- `docs/ARCHITECTURE.md`: Mermaid diagrams of the offline pipeline and the online request path, plus a design-decision table.
+- `README.md`: results at a glance, one-command reproduction, syllabus mapping table, corrected data description.
+
+**New test-set numbers:**
+- DistilBERT leakage: full report unmasked 0.903 → masked 0.897 → problem-only 0.859 macro-F1.
+- Cross-family (train on one family, test on the other): A320 → B737 0.794 vs 0.835 in-family; B737 → A320 0.756 vs 0.849.
+
+**Tests:** 92 passed.
+
+**Definition-of-done check**
+- [x] `streamlit run` demo works end to end. Non-LLM results in ~0.15 s; the streamed summary completes in ~5–5.5 s, which is just over the 5 s target (Llama 3.2 3B meets it at 4.4 s).
+- [x] Every model has a baseline comparison on the 2025 test set.
+- [x] Leakage ablation and learning curve are in the report.
+- [x] README reproduces everything from a fresh clone (`download_data.py` + `aerofix.eval.final --full`), except the two optional hand-downloaded TCDS PDFs.

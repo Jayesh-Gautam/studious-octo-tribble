@@ -242,3 +242,18 @@ The automatic suggestions are often wrong (`MIA` is an airport, not MAINTENANCE)
 - So a deployed AeroFix should prioritise adding confirmed reports to the index, and periodically refresh the condition head.
 
 **Honest plotting.** The first figure zoomed the y-axis so 0.8 points of noise looked like a crash. The final figure uses a minimum 0.03 span per panel, and shows part condition (where the effect is) next to ATA (where it isn't).
+
+## Phase 10: Final evaluation
+
+**One command, two modes.** `aerofix.eval.final` assembles every table from saved artefacts in about a minute, so the report can be refreshed instantly. `--full` re-runs the whole pipeline from raw data, so every number is reproducible, not just reported.
+
+**No hand-copied numbers.** The headline table is parsed from each phase's generated report. If a phase is re-run, RESULTS.md updates instead of silently going stale.
+
+**Test-set ablations without retraining.** The leakage and cross-family DistilBERT runs saved their test predictions, so their test scores come from those files. No model is retrained on, or chosen by, the test year.
+
+**Error analysis, read by hand.** Of 20 random mistakes, about half are not really model errors:
+- **Structural boundaries:** the center wing box and wheel wells are coded as fuselage by some reporters and wings by others.
+- **Label inconsistency:** the same station appears under two chapters.
+- **Operator coding conventions.**
+
+That bounds the achievable accuracy. The genuine model errors are keyword bias (DOOR, WING) and missing domain knowledge.
