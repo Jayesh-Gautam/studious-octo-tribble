@@ -8,7 +8,7 @@
 | 3. Problem / action segmentation | Done (silver LLM labels; human check of test optional) |
 | 4. Classification | Done |
 | 5. Retrieval | Done |
-| 6. Recommenders | Not started |
+| 6. Recommenders | Done |
 | 7. RAG + LLM summary | Not started |
 | 8. App | Not started |
 | 9. Feedback loop | Not started |
@@ -201,3 +201,35 @@ Outputs: `reports/retrieval.md` and `models/retrieve/` (`biencoder/`, `crossenco
 - **App choice:** hybrid + cross-encoder rerank (protocol: best on val). It combines lexical and semantic matches, at 26 ms per query.
 
 **Tests:** 78 passed.
+
+## Phase 6: Recommenders (2026-10-28)
+
+Command: `python -m aerofix.recommend.evaluate` (~10 min).
+Outputs:
+- `reports/recommend.md`
+- `data/processed/sdr_actions.parquet`
+- `models/recommend/` (`object_map.json`, `ref_global_rates.json`)
+- `src/aerofix/retrieve/search.py`: the reusable `Retriever` the app will use (52 ms per query including the cross-encoder).
+
+**Canonical actions:** rules (verb + last two object words, abbreviations expanded, checks and sign-offs ignored) yield at least one action for 86.5% of reports. MiniLM embeddings + agglomerative clustering merged 216 object variants (BATTERY PACKS → BATTERY PACK, LIGHT BULB → BULB, CHARGER → BATTERY CHARGER).
+
+**Results (2,000 test queries, top 20 retrieved cases)**
+| Corrective action | hit@1 | hit@3 | verb hit@1 |
+|---|---|---|---|
+| Global most frequent | 0.037 | 0.122 | 0.113 |
+| Most frequent for DistilBERT-predicted JASC | 0.120 | 0.281 | 0.528 |
+| **Retrieval vote (similarity-weighted, k = 20)** | **0.307** | **0.463** | **0.733** |
+
+| Manual reference | hit@1 | hit@3 | top-1 = SRM 51-40-02 |
+|---|---|---|---|
+| Global most cited | 0.175 | 0.228 | 100% |
+| **Retrieval + count** | **0.582** | **0.737** | 13.8% |
+| Retrieval + specificity (log-lift) | 0.545 | 0.700 | 7.7% |
+| Direct classifier (TF-IDF + OvR LR, 300 refs) | 0.528 | 0.673 | 22.1% |
+
+**Findings**
+- **Retrieval beats classification for recommending actions.** Similar cases carry the specific part (EPSU, BATTERY PACK); a JASC code alone doesn't.
+- **Specificity vs hit rate.** Specificity ranking halves how often the most generic reference comes first, but lowers hit@k. Technicians really do cite generic references, so the hit metric rewards them. The app shows the specificity-ranked list *with* each reference's support share, so a generic but common reference is still visible.
+- **Extraction noise remains:** "REPLACE OPERATIONAL CHECK", bare verbs, and the abbreviation ENG.
+
+**Tests:** 84 passed.

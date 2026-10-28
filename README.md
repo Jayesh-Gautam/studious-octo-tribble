@@ -61,6 +61,7 @@ python -m aerofix.classify.transformer --model distilbert --train-family A320 --
 python -m aerofix.classify.transformer --model distilbert --train-family B737 --epochs 2 --name distilbert_B737
 python -m aerofix.classify.report        # Phase 4: reports/classification.md
 python -m aerofix.retrieve.evaluate      # Phase 5: train bi-/cross-encoder, evaluate retrieval (~25 min, GPU + Ollama)
+python -m aerofix.recommend.evaluate     # Phase 6: canonical actions + action/reference recommenders (~10 min)
 ```
 
 Two documents must be downloaded by hand from [drs.faa.gov](https://drs.faa.gov), because that site has no stable PDF links. Save them into `data/raw/docs/` as `TCDS_A28NM.pdf` (A320 family) and `TCDS_A16WE.pdf` (Boeing 737).

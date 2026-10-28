@@ -159,3 +159,17 @@ The automatic suggestions are often wrong (`MIA` is an airport, not MAINTENANCE)
 **Reciprocal rank fusion.** BM25 scores are unbounded and cosine is between -1 and 1, so adding scores would be meaningless. RRF uses ranks only: score = Σ 1/(60 + rank).
 
 **Honest caveat: optimising the proxy.** The fine-tuned model was trained with the same definition the proxy metric uses, so proxy metrics favour it. The LLM judge (a different, reader-like notion of relevance) preferred BM25 on 50 queries, and the two agree on only 63% of pairs. Choosing the hybrid for the app, which mixes lexical and semantic evidence, hedges against this. A small human-judged set is the proper fix.
+
+## Phase 6: Recommenders
+
+**Why recommend from retrieved cases rather than a classifier?** A classifier over the predicted JASC code gives the *typical* actions for that subsystem. Similar past cases carry the specific part and fix. The numbers confirm it: action hit@1 is 0.31 for the retrieval vote vs 0.12 for the JASC-based baseline.
+
+**Canonical actions.**
+- Free-text actions are reduced to verb + head noun so that "R&R LH AFT EMERG LIGHT PWR PACK M1673" and "REPLACED POWER PACK" count as the same recommendation.
+- Rules handle the grammar (verb lemmas, "removed and replaced" = replace, objects end at prepositions and punctuation).
+- Clustering handles vocabulary variants (plurals, word order, synonyms) that rules would miss.
+- Follow-up checks ("OPS CHECK GOOD") are excluded because they follow almost every repair and would top every list.
+
+**Similarity-weighted vote.** Each retrieved case votes for its actions with its cosine similarity to the query, so near-identical cases count more. The percentage shown is that action's share of the total vote.
+
+**Specificity (log-lift).** lift = (share of retrieved cases citing r) / (share of all reports citing r). Ranking by support × log(lift) favours references that are unusually common *for this fault*. Honest result: it reduces how often the generic reference comes first (13.8% → 7.7%) but lowers the hit rate, because generic references really are cited. That's a trade-off between informativeness and matching what technicians wrote, and the app shows both numbers.
