@@ -119,7 +119,8 @@ def encode(model, texts: list[str], batch_size: int = 512) -> np.ndarray:
     model.to(DEVICE).eval()
     texts = [t.lower() for t in texts]
     order = np.argsort([len(t) for t in texts])
-    out = np.zeros((len(texts), model.get_sentence_embedding_dimension()), dtype=np.float32)
+    dim_fn = getattr(model, "get_embedding_dimension", None) or model.get_sentence_embedding_dimension  # renamed in v6
+    out = np.zeros((len(texts), dim_fn()), dtype=np.float32)
     for i in range(0, len(order), batch_size):
         idx = order[i:i + batch_size]
         feats = features(model, [texts[j] for j in idx])

@@ -9,7 +9,7 @@
 | 4. Classification | Done |
 | 5. Retrieval | Done |
 | 6. Recommenders | Done |
-| 7. RAG + LLM summary | Not started |
+| 7. RAG + LLM summary | Done |
 | 8. App | Not started |
 | 9. Feedback loop | Not started |
 | 10. Final evaluation | Not started |
@@ -233,3 +233,33 @@ Outputs:
 - **Extraction noise remains:** "REPLACE OPERATIONAL CHECK", bare verbs, and the abbreviation ENG.
 
 **Tests:** 84 passed.
+
+## Phase 7: RAG + cited LLM summary (2026-10-28)
+
+Commands: `python -m aerofix.rag.docs` (parse + index, ~2 min), `python -m aerofix.rag.evaluate [--model llama3.2:3b]` (~6 min).
+Outputs:
+- `models/rag/` (`passages.parquet`, `passages.faiss`)
+- `reports/rag.md` and `reports/rag_llama32_3b.md`
+- `reports/rag_faithfulness_sheet.csv`: a 1–5 rubric for you to score
+- New: `src/aerofix/pipeline.py`, the end-to-end `Advisor` (preprocess → DistilBERT → hybrid retrieval → recommenders → passages → LLM) that the app will use.
+
+**Passages:** 7,237 chunks from the AMT General / Airframe / Powerplant handbooks and AC 43.13-1B, split at bold headings into 300-word windows with overlap. The TCDS are scans and are skipped.
+
+**50 random 2025 faults through the full pipeline**
+| Metric | Qwen 2.5 7B (final) | Llama 3.2 3B |
+|---|---|---|
+| Summaries with ≥ 1 citation | 100% | 100% |
+| Citation validity | 97.1% | 97.4% |
+| Summaries with a hallucinated manual reference | 0% | 4% |
+| Fully valid (all checks) | 88% | 80% |
+| End-to-end seconds (median / p90) | 5.9 / 6.5 | 4.4 / 4.7 |
+| Non-LLM part (ms, median) | 125 | 143 |
+
+**Iterations (first run → final, Qwen):**
+- Citations 24% → 100%: aggregated actions and references are now tagged with their supporting cases, plus one style example.
+- Unfinished last sentences are trimmed.
+- The mask token is shown as `<ref>` because the model was citing `[REF]`.
+
+**Open:** the end-to-end target is < 5 s. Qwen finishes in ~5.9 s; Llama 3.2 3B meets the target (4.4 s) at a small accuracy cost. In the app the structured results appear in ~0.15 s and the summary streams.
+
+**Tests:** 89 passed.

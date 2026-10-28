@@ -1,0 +1,19 @@
+"""ATA 100 chapter titles (public standard numbering), used to describe predicted
+systems in the app and to expand passage-retrieval queries ("DOORS", "LIGHTS")."""
+
+ATA_TITLES = {
+    "05": "TIME LIMITS / MAINTENANCE CHECKS", "11": "PLACARDS AND MARKINGS", "12": "SERVICING",
+    "21": "AIR CONDITIONING", "22": "AUTO FLIGHT", "23": "COMMUNICATIONS", "24": "ELECTRICAL POWER",
+    "25": "EQUIPMENT / FURNISHINGS", "26": "FIRE PROTECTION", "27": "FLIGHT CONTROLS", "28": "FUEL",
+    "29": "HYDRAULIC POWER", "30": "ICE AND RAIN PROTECTION", "31": "INDICATING / RECORDING SYSTEMS",
+    "32": "LANDING GEAR", "33": "LIGHTS", "34": "NAVIGATION", "35": "OXYGEN", "36": "PNEUMATIC",
+    "38": "WATER / WASTE", "45": "CENTRAL MAINTENANCE SYSTEM", "46": "INFORMATION SYSTEMS",
+    "49": "AIRBORNE AUXILIARY POWER (APU)", "51": "STANDARD PRACTICES / STRUCTURES", "52": "DOORS",
+    "53": "FUSELAGE", "54": "NACELLES / PYLONS", "55": "STABILIZERS", "56": "WINDOWS", "57": "WINGS",
+    "71": "POWER PLANT", "72": "ENGINE", "73": "ENGINE FUEL AND CONTROL", "74": "IGNITION", "75": "ENGINE AIR",
+    "76": "ENGINE CONTROLS", "77": "ENGINE INDICATING", "78": "EXHAUST", "79": "ENGINE OIL", "80": "STARTING",
+}
+
+
+def title(ata2: str) -> str:
+    return ATA_TITLES.get(str(ata2), "OTHER SYSTEMS")

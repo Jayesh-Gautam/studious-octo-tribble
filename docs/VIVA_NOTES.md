@@ -173,3 +173,38 @@ The automatic suggestions are often wrong (`MIA` is an airport, not MAINTENANCE)
 **Similarity-weighted vote.** Each retrieved case votes for its actions with its cosine similarity to the query, so near-identical cases count more. The percentage shown is that action's share of the total vote.
 
 **Specificity (log-lift).** lift = (share of retrieved cases citing r) / (share of all reports citing r). Ranking by support × log(lift) favours references that are unusually common *for this fault*. Honest result: it reduces how often the generic reference comes first (13.8% → 7.7%) but lowers the hit rate, because generic references really are cited. That's a trade-off between informativeness and matching what technicians wrote, and the app shows both numbers.
+
+## Phase 7: RAG over public documents + cited LLM summary
+
+**Only public data.**
+- The corpus is the FAA AMT Handbooks (General, Airframe, Powerplant) and AC 43.13-1B: 7,237 passages.
+- The TCDS PDFs are scanned images with no text, so they are excluded rather than OCR'd.
+- No OEM manual text is used anywhere. The LLM may only *point* to references technicians cited ("refer to AMM 52-10-00 in the approved maintenance data").
+
+**Chunking by headings.**
+- A heading is detected as a short, all-bold line at or above the document's body font size.
+- Sections are cut into 300-word chunks with a 50-word overlap, so a sentence split at a boundary still appears whole in one chunk.
+- Every chunk keeps its document, page and heading, which become the citation label `[AC 43.13-1B p.212]`.
+
+**Passage query.** The query is the predicted ATA chapter's title plus the fault text ("DOORS: DAMPER LEAKING"). Without the title, "damper" matched shimmy dampers on landing gear.
+
+**Generation design.**
+- The LLM sees only assembled evidence, every item labelled.
+- Temperature is 0.2.
+- No procedures, values or part numbers beyond the evidence.
+- Short output: 3 sentences, at most 2 labels per sentence.
+
+**Citation validator** (mechanical, not LLM-judged):
+1. Every `[label]` must exist in the context.
+2. Every manual reference written in the summary must appear in the context.
+3. At least one citation must be present.
+
+**Key fix:** the first version cited in only 24% of summaries. The model stated facts from the *aggregated* lines ("replace EPSU, 25%"), which had no labels to cite. Tagging each aggregated action and reference with its supporting cases ("see [Case 1] [Case 3]") and adding one style example raised it to 100% with ~96% validity. Lesson: the model can only cite what the context makes citable.
+
+**Faithfulness:** the automatic checks catch invented citations and references, not subtle misreadings. A 1–5 rubric sheet (`reports/rag_faithfulness_sheet.csv`) is provided for human scoring.
+
+**Latency trade-off.**
+- Everything except the LLM takes ~0.1–0.15 s. Generation dominates.
+- Qwen 2.5 7B takes ~5.5–6 s end to end, with 0 hallucinated references.
+- Llama 3.2 3B takes ~4.4 s, with 4% hallucinated references.
+- In the app the structured results appear immediately and the summary streams, so the technician isn't waiting on the LLM.
