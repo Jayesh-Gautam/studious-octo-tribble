@@ -15,7 +15,8 @@ LABELS = ["PROBLEM", "ACTION", "REF", "OTHER"]
 BIO = ["O"] + [f"{p}-{lab}" for lab in LABELS for p in ("B", "I")]
 
 SEG_TOKEN = re.compile(r"\[REF\]|\[\d+\]|[A-Z0-9]+(?:[&/'.\-][A-Z0-9]+)*|[^\sA-Z0-9]")
-CHUNK_END = {".", ";", "<", "/", ":"}           # chunk ends after these
+CHUNK_END = {".", ";", "<", "/", ":", "-"}      # chunk ends after these ("PVD -" station prefixes)
+CHUNK_START = {"("}                             # chunk starts at these ("(W)" codes)
 STEP_MARKER = re.compile(r"^\[\d+\]$")          # [01] [02]: step markers in recent reports
 
 # Action triggers. Past-tense verbs dominate; shorthand forms come from the Phase 2 abbreviation data.
@@ -72,26 +73,38 @@ def chunk_bounds(tokens: list[str]) -> list[int]:
     starts = [0]
     for i in range(1, len(tokens)):
         prev, tok = tokens[i - 1], tokens[i]
-        if prev in CHUNK_END or STEP_MARKER.match(tok) or tok in ACTION_VERBS or tok in DOC_WORDS:
+        if (prev in CHUNK_END or tok in CHUNK_START or STEP_MARKER.match(tok)
+                or tok in ACTION_VERBS or tok in DOC_WORDS):
             if starts[-1] != i:
                 starts.append(i)
     return starts
 
 
-def load_annotations(path) -> dict[str, list[tuple[list[str], list[str]]]]:
-    """segments.jsonl -> {'train': [(tokens, labels), ...], 'dev': [...], 'test': [...]}.
-    The last line per report wins (re-annotations); skipped reports are left out."""
+def load_annotations(*paths) -> tuple[dict[str, list[tuple[list[str], list[str]]]], dict]:
+    """Annotation files -> ({'train': [(tokens, labels), ...], 'dev': ..., 'test': ...}, sources).
+
+    Files are read in order and a later record for the same report replaces an
+    earlier one, so pass the LLM file first and the human file last: human labels
+    win. Skipped reports are left out. ``sources`` counts reports per
+    (split, annotator), where annotator is 'human' or the LLM model name.
+    """
     import json
+    from collections import Counter
+    from pathlib import Path
     latest = {}
-    for line in open(path, encoding="utf-8"):
-        if line.strip():
-            rec = json.loads(line)
-            latest[rec["row_id"]] = rec
-    out = {"train": [], "dev": [], "test": []}
+    for path in paths:
+        if path is None or not Path(path).exists():
+            continue
+        for line in open(path, encoding="utf-8"):
+            if line.strip():
+                rec = json.loads(line)
+                latest[rec["row_id"]] = rec
+    out, sources = {"train": [], "dev": [], "test": []}, Counter()
     for rec in latest.values():
         if not rec["skipped"]:
             out[rec["ann_split"]].append((rec["tokens"], rec["labels"]))
-    return out
+            sources[(rec["ann_split"], rec.get("annotator", "human"))] += 1
+    return out, dict(sources)
 
 
 def join_tokens(tokens: list[str]) -> str:

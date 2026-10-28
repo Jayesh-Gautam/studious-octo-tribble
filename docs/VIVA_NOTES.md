@@ -98,3 +98,17 @@ The automatic suggestions are often wrong (`MIA` is an airport, not MAINTENANCE)
 **Two metrics.**
 - **Token F1** gives partial credit for nearly-right boundaries.
 - **Span F1** is strict: start, end and label must all match. A segmenter that's off by one word gets decent token F1 but zero span credit for that span. Both are reported because they answer different questions.
+
+**Change of plan: LLM-assisted (silver) annotation.** Hand-labelling 400 reports (3–4 hours) wasn't possible in the time available, so the local LLM (Qwen 2.5 7B via Ollama) labelled them. Be ready to defend these points:
+- **Chunk-level, not word-level.** A 7B model is unreliable at counting words but good at judging phrases. It labels the same chunks the human tool shows.
+- **Constrained output.** One *required* JSON key per chunk, enforced by Ollama's schema-constrained decoding, so the number of labels can never be wrong (0 fallbacks out of 399).
+- **Deterministic constraints where rules are reliable.** References come from the Phase 1 regex (forced to REF), and punctuation follows the previous word.
+- **Worked examples (few-shot)** come from train reports and the guide, never from test reports.
+- **Human labels always win.** They live in a separate file and override the LLM.
+- **Honest reporting.** The report states that test scores measure *agreement with the LLM labels*. Human verification of the 60 test reports is the planned next step and would make the evaluation fully gold-standard.
+
+**Result: CRF beats BERT on spans, BERT edges it on tokens.**
+- DistilBERT's softmax predicts each token on its own, so it fragments spans (P P A P A). Token F1 forgives that; strict span F1 doesn't.
+- The CRF's transition weights and Viterbi decoding produce whole, clean spans.
+- The standard fix is a CRF layer on top of BERT (BERT-CRF), listed as future work.
+- With only 280 training reports, a 66M-parameter model can't beat good features plus structured decoding. The learning curve shows BERT is still improving at 280.

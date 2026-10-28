@@ -52,5 +52,33 @@ def test_metrics_perfect_and_boundary_error():
     assert 0 < token_scores(gold, off_by_one)["PROBLEM"] < 1  # token F1 gives partial credit
 
 
+def test_chunks_split_station_prefix_and_codes():
+    toks = seg_tokenize("PVD - ROWS 10 LIGHT INOP. (W)")
+    assert chunk_bounds(toks) == [0, 2, 7]  # "PVD -" | "ROWS 10 LIGHT INOP ." | "( W )"
+
+
+def test_llm_schema_and_ref_constraint():
+    from aerofix.segment.llm_label import apply_ref_constraint, schema
+    s = schema(3)
+    assert s["required"] == ["1", "2", "3"] and s["properties"]["2"]["enum"] == ["PROBLEM", "ACTION", "REF", "OTHER"]
+    toks = seg_tokenize("SPOILER OUT OF ADJUSTMENT. REPAIRED IAW MM.")
+    bounds = chunk_bounds(toks)
+    ends = bounds[1:] + [len(toks)]
+    llm = ["PROBLEM"] * 5 + ["REF", "REF", "OTHER", "OTHER"]  # LLM mislabels "REPAIRED IAW" and "MM ."
+    fixed = apply_ref_constraint(toks, llm, bounds, ends)
+    assert fixed[toks.index("REPAIRED")] == "ACTION"  # REF chunk starting with an action verb
+    assert fixed[toks.index("MM")] == "REF" and fixed[-1] == "REF"  # doc word forced; "." follows it
+
+
+def test_load_annotations_human_wins(tmp_path):
+    import json
+    from aerofix.segment.common import load_annotations
+    rec = {"row_id": 1, "ann_split": "train", "tokens": ["A"], "skipped": False}
+    (tmp_path / "llm.jsonl").write_text(json.dumps({**rec, "labels": ["ACTION"], "annotator": "qwen"}) + "\n")
+    (tmp_path / "human.jsonl").write_text(json.dumps({**rec, "labels": ["PROBLEM"]}) + "\n")
+    data, sources = load_annotations(tmp_path / "llm.jsonl", tmp_path / "human.jsonl")
+    assert data["train"] == [(["A"], ["PROBLEM"])] and sources == {("train", "human"): 1}
+
+
 def test_join_tokens():
     assert join_tokens(["DOOR", "LEAKING", ".", "(", "OPEN", ")"]) == "DOOR LEAKING. (OPEN)"

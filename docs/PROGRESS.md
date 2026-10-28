@@ -5,7 +5,7 @@
 | 0. Setup | Done |
 | 1. Data pipeline + EDA | Done |
 | 2. Text normalisation | Done (abbrev.csv awaiting your review) |
-| 3. Problem / action segmentation | Tooling done, waiting for annotation (400 reports) |
+| 3. Problem / action segmentation | Done (silver LLM labels; human check of test optional) |
 | 4. Classification | Not started |
 | 5. Retrieval | Not started |
 | 6. Recommenders | Not started |
@@ -105,16 +105,33 @@ Everything is fitted on train and measured on val; test was not used.
 
 **Your action:** review `data/annotations/abbrev.csv` (153 rows: 123 to expand, 16 marked ambiguous, 14 kept as-is). Change an `expansion` or set `ambiguous` to yes/no, then rerun the two commands above.
 
-## Phase 3: Problem / action segmentation (in progress)
+## Phase 3: Problem / action segmentation (2026-10-28)
 
-**Done**
-- Sample of 400 reports from 1995–2024: 280 train / 60 dev / 60 test, balanced by family and era (`data/annotations/seg_sample.parquet`).
-- Annotation app, annotation guide, rule baseline, CRF, DistilBERT (own PyTorch loop), evaluation with token and span F1 plus a learning curve, and corpus application.
-- Dry run on rule-generated "silver" labels to check the pipeline end to end (numbers not reported):
-  - All three methods train, score and save.
-  - Corpus inference takes ~16 min (BERT) or ~11 min (CRF).
-- Tests: 64 passed.
+Commands:
+1. `python -m aerofix.segment.sample`
+2. `python -m aerofix.segment.llm_label` (and/or the human annotation tool)
+3. `python -m aerofix.segment.evaluate`
+4. `python -m aerofix.segment.apply`
 
-**Waiting for:** annotation of the 400 reports (`streamlit run src/aerofix/segment/annotate_app.py`).
-- Train/dev reports are pre-filled by the rules; test reports start blank (so the evaluation isn't biased towards the rules).
-- Then run `python -m aerofix.segment.evaluate` and `python -m aerofix.segment.apply`.
+Outputs: `reports/segmentation.md`, `models/segment/` and `data/processed/sdr_segments.parquet`.
+
+**Annotation (change of plan):** 399 of 400 reports were labelled by the local LLM (Qwen 2.5 7B, chunk level, schema-constrained JSON, deterministic REF rules), and 1 by a human. These are *silver* labels: test scores measure agreement with the LLM. Human labels override LLM labels whenever added.
+
+**Results (60 test reports)**
+| Method | Token macro-F1 | Span micro-F1 |
+|---|---|---|
+| Rules (baseline) | 0.508 | 0.194 |
+| **CRF** (chosen on dev) | 0.781 | **0.681** |
+| DistilBERT (own loop) | **0.798** | 0.580 |
+
+- CRF selected (dev span F1 0.71 vs 0.61): its transition weights give clean spans, while BERT's per-token softmax fragments them.
+- Learning curve: the CRF is fairly flat (0.63 → 0.69 span F1 from 70 to 280 reports); BERT is noisier.
+
+**Corpus output (CRF on 540,008 reports):**
+- Median problem text: 13 words.
+- Has an action part: 94–97% per split.
+- No PROBLEM tokens found (whole masked report used instead): 1.2% train, 2.3% val, 1.7% test.
+
+**Optional, recommended for the viva:** hand-label the 60 test reports in the annotation tool (≈30 min). Human labels automatically replace the LLM ones; then rerun `segment.evaluate`.
+
+**Tests:** 67 passed.
